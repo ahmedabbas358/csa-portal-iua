@@ -4,6 +4,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#f8fafc">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/pwa-192x192.png">
+
     <title>CSA - Computer Science Association</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -61,9 +67,14 @@
         --brand-900: 12 74 110;
         --accent-500: 245 158 11;
       }
+      html {
+        scroll-behavior: smooth;
+        -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile for cleaner feel */
+      }
       body {
         background-color: #f8fafc;
         overflow-x: hidden;
+        overscroll-behavior-y: none; /* Prevent pull-to-refresh if desired for app-feel, usually better for PWA */
       }
       /* Custom Scrollbar */
       ::-webkit-scrollbar {

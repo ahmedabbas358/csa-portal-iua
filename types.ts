@@ -39,9 +39,9 @@ export interface EventItem {
   location: string;
   locationAr: string;
   type?: string;
-  registrationLink?: string; 
+  registrationLink?: string;
   isOnline?: boolean; // New: Support for electronic events
-  meetingLink?: string; // New: Zoom/Google Meet link
+  meetingLink?: string; // Zoom or Google Meet link for online events
 }
 
 export interface PostDesignConfig {
@@ -66,24 +66,30 @@ export interface PostDesignConfig {
   };
 }
 
+export interface MediaItem {
+  type: 'image' | 'video';
+  url: string;
+}
+
 export interface NewsPost {
   id: string;
   title: string;
-  content: string; 
+  content: string;
   date: string;
   author: string;
   tags: string[];
-  image?: string; // treated as media url
-  mediaType?: 'image' | 'video';
-  aspectRatio?: 'square' | 'portrait' | 'landscape' | 'story'; // New: Control display size
-  design?: PostDesignConfig; // New: Instagram-style text overlay settings
-  views: number; // New: Real view count
-  likes: number; 
-  likedByCurrentUser?: boolean; 
-  datePublished?: string; // Automatically set when created
-  status: 'published' | 'draft' | 'scheduled'; // New: Post Status
-  scheduledDate?: string; // New: For scheduling
-  lastUpdated?: string; // New: For analytics
+  image?: string; // Legacy support
+  mediaType?: 'image' | 'video'; // Legacy support
+  media?: MediaItem[]; // New: Supports multiple media items
+  aspectRatio?: 'square' | 'portrait' | 'landscape' | 'story';
+  design?: PostDesignConfig;
+  views: number;
+  likes: number;
+  likedByCurrentUser?: boolean;
+  datePublished?: string;
+  status: 'published' | 'draft' | 'scheduled';
+  scheduledDate?: string;
+  lastUpdated?: string;
 }
 
 export interface TimelineItem {
@@ -102,8 +108,8 @@ export interface AppSettings {
   logoUrl: string;
   primaryColor: string;
   secondaryColor: string;
-  aboutTextAr: string; 
-  aboutTextEn: string; 
+  aboutTextAr: string;
+  aboutTextEn: string;
   visionAr: string;
   visionEn: string;
   missionAr: string;
@@ -118,17 +124,17 @@ export interface AccessKey {
   token: string;
   role: AdminRole;
   generatedAt: string;
-  expiresAt: string; 
+  expiresAt: string;
   isUsed: boolean;
-  generatedBy: string; 
+  generatedBy: string;
 }
 
 export interface ActiveSession {
   sessionId: string;
   tokenUsed: string;
   role: AdminRole;
-  deviceInfo: string; 
-  ipAddress: string; 
+  deviceInfo: string;
+  ipAddress: string;
   loginTime: string;
   isActive: boolean;
 }
@@ -147,7 +153,7 @@ export interface AppState {
   members: Member[];
   news: NewsPost[];
   settings: AppSettings;
-  accessKeys: AccessKey[]; 
+  accessKeys: AccessKey[];
   sessions: ActiveSession[];
   timeline: TimelineItem[];
   deanConfig?: DeanSecurityConfig; // Added this
