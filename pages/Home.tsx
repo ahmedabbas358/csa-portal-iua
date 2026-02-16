@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { ArrowRight, Calendar, Users, Award, Eye, Share2, Search, PlayCircle, CheckCircle, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Tag, X, MousePointer, Copy, Facebook, Twitter, Linkedin, MessageCircle, Mail, Send, Link as LinkIcon, Instagram, MoreHorizontal, ZoomIn, ZoomOut, Move, Download } from 'lucide-react';
+import { ArrowRight, Calendar, Users, Award, Eye, Share2, Search, PlayCircle, CheckCircle, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Tag, X, MousePointer, Copy, Facebook, Twitter, Linkedin, MessageCircle, Mail, Send, Link as LinkIcon, Instagram, MoreHorizontal, ZoomIn, ZoomOut, Move, Download, Heart } from 'lucide-react';
 import { Language, NewsPost, AppSettings, MediaItem } from '../types';
 
 interface HomeProps {
@@ -166,11 +166,13 @@ interface NewsCardProps {
     onExpand: (id: string) => void;
     isExpanded: boolean;
     onShare: (id: string) => void;
+    onLike: (id: string) => void;
+    isLiked: boolean;
     onViewImage: (url: string) => void;
     formatDate: (date: string) => string;
 }
 
-const NewsCard: React.FC<NewsCardProps> = ({ post, isRtl, onExpand, isExpanded, onShare, onViewImage, formatDate }) => {
+const NewsCard: React.FC<NewsCardProps> = ({ post, isRtl, onExpand, isExpanded, onShare, onLike, isLiked, onViewImage, formatDate }) => {
     const hasLongContent = post.content.length > 150;
     const [currentSlide, setCurrentSlide] = useState(0);
 
@@ -356,19 +358,31 @@ const NewsCard: React.FC<NewsCardProps> = ({ post, isRtl, onExpand, isExpanded, 
 
             {/* Action Bar */}
             <div className="p-3 md:p-4 border-t border-gray-50 dark:border-slate-700 flex items-center justify-between">
-                <div className="flex items-center gap-6">
-                    <div className="flex items-center gap-2 group text-gray-500 dark:text-gray-400" title="Views">
-                        <Eye size={20} />
-                        <span className="text-xs md:text-sm font-bold">{post.views ? post.views.toLocaleString() : '0'}</span>
-                    </div>
-                    <div className="flex items-center gap-2 group text-gray-500 dark:text-gray-400" title="Interactions">
-                        <MousePointer size={20} />
-                        <span className="text-xs md:text-sm font-bold">{Math.floor((post.views || 0) * 0.15).toLocaleString()}</span>
+                <div className="flex items-center gap-4 md:gap-6">
+                    {/* Like Button - Real & Interactive */}
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onLike(post.id);
+                        }}
+                        className={`flex items-center gap-2 group transition-all text-sm font-bold ${isLiked ? 'text-red-500 scale-105' : 'text-gray-500 dark:text-gray-400 hover:text-red-500'}`}
+                    >
+                        <Heart
+                            size={24}
+                            className={`transition-transform duration-300 ${isLiked ? 'fill-current scale-110' : 'group-hover:scale-110'}`}
+                        />
+                        <span>{post.likes ? post.likes.toLocaleString() : '0'}</span>
+                    </button>
+
+                    {/* Views Count */}
+                    <div className="flex items-center gap-2 group text-gray-400 dark:text-gray-500" title="Views">
+                        <Eye size={22} />
+                        <span className="text-xs md:text-sm font-semibold">{post.views ? post.views.toLocaleString() : '0'}</span>
                     </div>
                 </div>
-                <button onClick={() => onShare(post.id)} className="flex items-center gap-2 text-gray-500 dark:text-gray-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors">
-                    <Share2 size={20} />
-                    <span className="text-xs font-bold hidden md:inline">{isRtl ? 'مشاركة' : 'Share'}</span>
+
+                <button onClick={() => onShare(post.id)} className="flex items-center gap-2 text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                    <Share2 size={24} />
                 </button>
             </div>
         </div>
@@ -447,6 +461,40 @@ const Home: React.FC<HomeProps> = ({ lang, news, setNews, setPage, settings }) =
         const start = (currentPageNum - 1) * itemsPerPage;
         return filteredNews.slice(start, start + itemsPerPage);
     }, [filteredNews, currentPageNum]);
+
+    // --- LIKE FUNCTIONALITY ---
+    const [likedPosts, setLikedPosts] = useState<Set<string>>(() => {
+        const saved = localStorage.getItem('csa_user_likes');
+        return saved ? new Set(JSON.parse(saved)) : new Set();
+    });
+
+    useEffect(() => {
+        localStorage.setItem('csa_user_likes', JSON.stringify(Array.from(likedPosts)));
+    }, [likedPosts]);
+
+    const handleLike = (id: string) => {
+        if (likedPosts.has(id)) {
+            // Unlike
+            setLikedPosts(prev => {
+                const next = new Set(prev);
+                next.delete(id);
+                return next;
+            });
+            setNews(prev => prev.map(p =>
+                p.id === id ? { ...p, likes: Math.max(0, (p.likes || 0) - 1) } : p
+            ));
+        } else {
+            // Like
+            setLikedPosts(prev => {
+                const next = new Set(prev);
+                next.add(id);
+                return next;
+            });
+            setNews(prev => prev.map(p =>
+                p.id === id ? { ...p, likes: (p.likes || 0) + 1 } : p
+            ));
+        }
+    };
 
     // --- VIEW COUNTING LOGIC ---
     useEffect(() => {
@@ -666,6 +714,8 @@ const Home: React.FC<HomeProps> = ({ lang, news, setNews, setPage, settings }) =
                                         isExpanded={expandedPosts.has(post.id)}
                                         onExpand={toggleExpand}
                                         onShare={handleShareClick}
+                                        onLike={handleLike}
+                                        isLiked={likedPosts.has(post.id)}
                                         onViewImage={setViewingImage}
                                         formatDate={formatDate}
                                     />
