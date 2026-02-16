@@ -1,23 +1,49 @@
 import { GoogleGenAI } from "@google/genai";
 
-const apiKey = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY || '';
+const getApiKey = () => {
+  return import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY || '';
+};
 
-// Note: In a real production app, ensure the API key is handled securely. 
-// For this frontend-only demo, we assume the environment variable is injected.
+// Lazy initialization to prevent app crash if key is missing
+let ai: GoogleGenAI | null = null;
 
-const ai = new GoogleGenAI({ apiKey });
+const getAIClient = () => {
+  if (ai) return ai;
+
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    console.warn("Gemini API Key is missing. AI features will be disabled.");
+    return null;
+  }
+
+  try {
+    ai = new GoogleGenAI({ apiKey });
+    return ai;
+  } catch (error) {
+    console.error("Failed to initialize GoogleGenAI client:", error);
+    return null;
+  }
+};
 
 export const generateContentHelper = async (
   prompt: string,
   language: 'en' | 'ar'
 ): Promise<string> => {
   try {
+    const client = getAIClient();
+
+    if (!client) {
+      return language === 'ar'
+        ? 'يرجى تكوين مفتاح API للذكاء الاصطناعي (GEMINI_API_KEY) لتفعيل هذه الميزة.'
+        : 'Please configure the AI API Key (GEMINI_API_KEY) to enable this feature.';
+    }
+
     const systemInstruction = language === 'ar'
       ? 'أنت مساعد ذكي لجمعية طلابية للحاسوب. ساعد في كتابة محتوى احترافي وجذاب للإعلانات والفعاليات.'
       : 'You are an AI assistant for a Computer Science Student Association. Help write professional and engaging content for announcements and events.';
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+    const response = await client.models.generateContent({
+      model: 'gemini-2.0-flash',
       contents: prompt,
       config: {
         systemInstruction: systemInstruction,
