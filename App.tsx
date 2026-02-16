@@ -162,6 +162,72 @@ const App: React.FC = () => {
             root.style.setProperty('--brand-900', rgb);
         }
 
+        // 5. Border Radius
+        const radiusMap = {
+            'none': '0px',
+            'sm': '0.25rem',
+            'md': '0.5rem',
+            'lg': '0.75rem',
+            'xl': '1rem',
+            '2xl': '1.5rem'
+        };
+        root.style.setProperty('--radius-base', radiusMap[settings.borderRadius || 'xl']);
+
+        // 6. Animation Speed
+        const speedMap = {
+            'slow': '500ms',
+            'normal': '300ms',
+            'fast': '150ms'
+        };
+        root.style.setProperty('--transition-speed', speedMap[settings.animationSpeed || 'normal']);
+
+        // 7. Font Family
+        const fontMap = {
+            'sans': 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+            'serif': 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif',
+            'mono': 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+            'cairo': '"Cairo", sans-serif',
+            'inter': '"Inter", sans-serif'
+        };
+        root.style.setProperty('--font-primary', fontMap[settings.fontStyle || 'sans']);
+
+        // Inject Dynamic Styles for Radius & Transition Overrides
+        const styleId = 'dynamic-theme-styles';
+        let styleTag = document.getElementById(styleId);
+        if (!styleTag) {
+            styleTag = document.createElement('style');
+            styleTag.id = styleId;
+            document.head.appendChild(styleTag);
+        }
+
+        styleTag.innerHTML = `
+            :root {
+                --radius-base: ${radiusMap[settings.borderRadius || 'xl']};
+                --transition-speed: ${speedMap[settings.animationSpeed || 'normal']};
+            }
+            body {
+                font-family: var(--font-primary) !important;
+            }
+            .rounded-xl, .rounded-2xl, .rounded-lg, .rounded-md, .rounded-sm, .rounded {
+                border-radius: var(--radius-base) !important;
+            }
+            .transition-all, .transition-colors, .transition-opacity, .transition-transform {
+                transition-duration: var(--transition-speed) !important;
+            }
+        `;
+
+        // Inject Fonts
+        if (settings.fontStyle === 'cairo' || settings.fontStyle === 'inter' || !settings.fontStyle) {
+            const fontLinkId = 'dynamic-fonts';
+            if (!document.getElementById(fontLinkId)) {
+                const link = document.createElement('link');
+                link.id = fontLinkId;
+                link.rel = 'stylesheet';
+                link.href = 'https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Inter:wght@300;400;600;700;900&display=swap';
+                document.head.appendChild(link);
+            }
+        }
+
     }, [settings, isDarkMode]);
 
     // --- AUTHENTICATION LOGIC ---

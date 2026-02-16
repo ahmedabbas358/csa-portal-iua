@@ -36,15 +36,19 @@ export const INITIAL_STATE: AppState = {
   settings: {
     siteNameEn: 'CS Student Association',
     siteNameAr: 'جمعية طلاب الحاسوب',
-    logoUrl: '', 
-    primaryColor: '#0284c7', 
+    logoUrl: '',
+    primaryColor: '#0284c7',
     secondaryColor: '#0c4a6e',
     aboutTextAr: 'جمعية طلابية متخصصة في مجال الحاسب الآلي تم إنشائها في 2010 بواسطة طلاب من كلية دراسات الحاسوب بجامعة أفريقيا العالمية. نسعى لتمكين الطالب التقني من خلال بيئة تعليمية وعملية محفزة.',
     aboutTextEn: 'A student association specialized in the field of Computer Science, established in 2010 by students from the Faculty of Computer Studies at the International University of Africa.',
     visionAr: 'أن نكون المنصة الرائدة في تمكين طلاب الحاسوب وبناء قادة المستقبل التقني.',
     visionEn: 'To be the leading platform in empowering computer students and building future tech leaders.',
     missionAr: 'سد الفجوة بين المنهج الأكاديمي وسوق العمل من خلال ورش العمل والمشاريع.',
-    missionEn: 'Bridging the gap between academic curriculum and the job market through workshops and projects.'
+    missionEn: 'Bridging the gap between academic curriculum and the job market through workshops and projects.',
+    borderRadius: 'xl',
+    animationSpeed: 'normal',
+    fontStyle: 'cairo',
+    backgroundPattern: 'none'
   },
   events: [
     {
