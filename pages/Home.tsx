@@ -405,6 +405,9 @@ const Home: React.FC<HomeProps> = ({ lang, news, setNews, setPage, settings }) =
     // View Image State
     const [viewingImage, setViewingImage] = useState<string | null>(null);
 
+    // Hero Theme State
+    const [heroTheme, setHeroTheme] = useState('default');
+
     // View counting refs
     const viewedSession = useRef<Set<string>>(new Set());
     const observer = useRef<IntersectionObserver | null>(null);
@@ -587,17 +590,88 @@ const Home: React.FC<HomeProps> = ({ lang, news, setNews, setPage, settings }) =
             />
 
             {/* --- Hero Section --- */}
-            <div className="relative bg-[#0B1120] overflow-hidden text-white shadow-2xl pb-20">
-                {/* High Fidelity Background */}
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#1e40af] via-[#0f172a] to-[#020617]"></div>
+            {/* Theme Switcher UI */}
+            <div className={`absolute top-4 ${isRtl ? 'left-4' : 'right-4'} z-50 flex gap-2 p-2 bg-black/20 backdrop-blur-lg rounded-full border border-white/10 opacity-0 hover:opacity-100 transition-opacity duration-300`}>
+                {['default', 'purple', 'emerald', 'midnight', 'royal'].map((theme) => (
+                    <button
+                        key={theme}
+                        onClick={() => setHeroTheme(theme)}
+                        className={`w-4 h-4 rounded-full transition-all border-2 ${heroTheme === theme ? 'border-white scale-125' : 'border-transparent hover:scale-110'}`}
+                        style={{
+                            backgroundColor:
+                                theme === 'default' ? '#1e40af' :
+                                    theme === 'purple' ? '#7c3aed' :
+                                        theme === 'emerald' ? '#059669' :
+                                            theme === 'midnight' ? '#0f172a' :
+                                                '#be185d' // royal/pink
+                        }}
+                        title={`Theme: ${theme}`}
+                    />
+                ))}
+            </div>
 
-                {/* CSS-only Grid Pattern for Sharpness */}
-                <div className="absolute inset-0 z-0 opacity-20" style={{ backgroundImage: 'linear-gradient(#ffffff 1px, transparent 1px), linear-gradient(90deg, #ffffff 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
+            <div className={`relative overflow-hidden text-white shadow-2xl pb-20 transition-colors duration-1000 ease-in-out`}
+                style={{
+                    backgroundColor:
+                        heroTheme === 'default' ? '#0B1120' :
+                            heroTheme === 'purple' ? '#2e1065' :
+                                heroTheme === 'emerald' ? '#022c22' :
+                                    heroTheme === 'midnight' ? '#020617' :
+                                        '#4a044e'
+                }}
+            >
+                {/* Dynamic Backgrounds */}
+                {heroTheme === 'default' && (
+                    <>
+                        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#1e40af] via-[#0f172a] to-[#020617] animate-fade-in"></div>
+                        <div className="absolute inset-0 z-0 opacity-20" style={{ backgroundImage: 'linear-gradient(#ffffff 1px, transparent 1px), linear-gradient(90deg, #ffffff 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
+                    </>
+                )}
 
-                {/* Glowing Orbs */}
+                {heroTheme === 'purple' && (
+                    <>
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#7c3aed] via-[#4c1d95] to-[#2e1065] animate-fade-in"></div>
+                        <div className="absolute inset-0 z-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
+                    </>
+                )}
+
+                {heroTheme === 'emerald' && (
+                    <>
+                        <div className="absolute inset-0 bg-gradient-to-br from-[#059669] via-[#065f46] to-[#022c22] animate-fade-in"></div>
+                        <div className="absolute inset-0 z-0 opacity-10" style={{ backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)', backgroundSize: '30px 30px' }}></div>
+                    </>
+                )}
+
+                {heroTheme === 'midnight' && (
+                    <>
+                        <div className="absolute inset-0 bg-slate-950 animate-fade-in"></div>
+                        <div className="absolute inset-0 opacity-30 bg-[radial-gradient(#3b82f6_1px,transparent_1px)] [background-size:16px_16px]"></div>
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_800px_at_50%_200px,#3b82f6,transparent)] opacity-20"></div>
+                    </>
+                )}
+
+                {heroTheme === 'royal' && (
+                    <>
+                        <div className="absolute inset-0 bg-[conic-gradient(at_top,_var(--tw-gradient-stops))] from-gray-900 via-rose-900 to-gray-900 animate-fade-in"></div>
+                        <div className="absolute inset-0 z-0 opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+                    </>
+                )}
+
+                {/* Glowing Orbs (Common but colored differently) */}
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none overflow-hidden">
-                    <div className="absolute top-[-10%] left-[20%] w-[600px] h-[600px] bg-brand-500/20 rounded-full blur-[120px] mix-blend-screen animate-pulse-slow"></div>
-                    <div className="absolute bottom-[-10%] right-[20%] w-[500px] h-[500px] bg-purple-500/10 rounded-full blur-[100px] mix-blend-screen"></div>
+                    <div className={`absolute top-[-10%] left-[20%] w-[600px] h-[600px] rounded-full blur-[120px] mix-blend-screen animate-pulse-slow ${heroTheme === 'default' ? 'bg-brand-500/20' :
+                        heroTheme === 'purple' ? 'bg-fuchsia-500/20' :
+                            heroTheme === 'emerald' ? 'bg-teal-500/20' :
+                                heroTheme === 'midnight' ? 'bg-blue-600/10' :
+                                    'bg-red-500/20'
+                        }`}></div>
+
+                    <div className={`absolute bottom-[-10%] right-[20%] w-[500px] h-[500px] rounded-full blur-[100px] mix-blend-screen ${heroTheme === 'default' ? 'bg-purple-500/10' :
+                        heroTheme === 'purple' ? 'bg-indigo-500/10' :
+                            heroTheme === 'emerald' ? 'bg-lime-500/10' :
+                                heroTheme === 'midnight' ? 'bg-cyan-500/10' :
+                                    'bg-orange-500/10'
+                        }`}></div>
                 </div>
 
                 <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32 flex flex-col items-center text-center">
