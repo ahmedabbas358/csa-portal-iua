@@ -3,9 +3,12 @@
     "version": "1.0.0",
     "description": "Backend API for CSA Portal",
     "main": "dist/index.js",
+    "engines": {
+        "node": ">=18.0.0"
+    },
     "scripts": {
         "build": "tsc",
-        "start": "node dist/index.js",
+        "start": "npx prisma migrate deploy && node dist/index.js",
         "dev": "nodemon src/index.ts",
         "lint": "eslint . --ext .ts",
         "test": "jest"
