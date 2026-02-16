@@ -7,13 +7,11 @@ import Events from './pages/Events';
 import Team from './pages/Team';
 import Contact from './pages/Contact';
 import Admin from './pages/Admin';
-import Auth from './pages/Auth';
 import DeanDashboard from './pages/DeanDashboard';
 import { Language, AppState, AccessKey, ActiveSession, DeanSecurityConfig } from './types';
 import { INITIAL_STATE, DEAN_MASTER_KEY } from './constants';
 import { Lock, ShieldCheck, AlertCircle, ScanLine, X, QrCode, KeyRound, HelpCircle, RefreshCw } from 'lucide-react';
 import Footer from './components/Footer';
-import { api } from './services/api';
 import { BackgroundPattern } from './types';
 
 import { getPatternStyle as getEnginePattern, getIconStyleCSS } from './utils/styleEngine';
@@ -51,7 +49,6 @@ const App: React.FC = () => {
     const [isDarkMode, setIsDarkMode] = useState(false);
 
     // Auth State
-    const [user, setUser] = useState<any>(null); // New Member State
     const [isLoggedIn, setIsLoggedIn] = useState(false); // Regular Admin
     const [isDeanLoggedIn, setIsDeanLoggedIn] = useState(false); // Dean
     const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
@@ -67,17 +64,6 @@ const App: React.FC = () => {
 
     // --- INITIALIZATION ---
     useEffect(() => {
-        // Check for Member Token
-        const token = localStorage.getItem('token');
-        if (token) {
-            api.auth.me()
-                .then(u => setUser(u))
-                .catch(() => {
-                    localStorage.removeItem('token');
-                    setUser(null);
-                });
-        }
-
         // Load Dean Config
         const storedConfig = localStorage.getItem('csa_dean_config');
         if (storedConfig) {
@@ -361,8 +347,6 @@ const App: React.FC = () => {
         }
         setIsLoggedIn(false);
         setIsDeanLoggedIn(false);
-        setUser(null);
-        localStorage.removeItem('token');
         setCurrentPage('home');
         setCurrentSessionId(null);
     };
@@ -437,18 +421,6 @@ const App: React.FC = () => {
                 );
 
             case 'login':
-                return (
-                    <Auth
-                        onLogin={(u) => {
-                            setUser(u);
-                            setSettings(prev => ({ ...prev, ...(u.settings || {}) }));
-                            setCurrentPage('home');
-                        }}
-                        onAdminLogin={() => setCurrentPage('admin-login')}
-                    />
-                );
-
-            case 'admin-login':
                 return (
                     <div className="min-h-[70vh] flex items-center justify-center px-4 bg-slate-50 dark:bg-slate-900 relative overflow-hidden transition-colors duration-500">
                         <button
