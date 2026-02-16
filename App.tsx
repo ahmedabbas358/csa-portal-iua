@@ -30,6 +30,9 @@ const getPatternStyle = (pattern?: BackgroundPattern, isDark?: boolean): React.C
         case 'topography': return { backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='${isDark ? '%23ffffff' : '%23000000'}' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E")` };
         case 'gradient-radial': return { backgroundImage: `radial-gradient(circle at center, ${color}, transparent 70%)` };
         case 'gradient-linear': return { backgroundImage: `linear-gradient(135deg, ${color} 0%, transparent 100%)` };
+        case 'leaf': return { backgroundImage: `url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1h2v2H1V1zm4 0h2v2H5V1zm4 0h2v2H9V1zm4 0h2v2h-2V1zm4 0h2v2h-2V1zM1 5h2v2H1V5zm4 0h2v2H5V5zm4 0h2v2H9V5zm4 0h2v2h-2V5zm4 0h2v2h-2V5zM1 9h2v2H1V9zm4 0h2v2H5V9zm4 0h2v2H9V9zm4 0h2v2h-2V9zm4 0h2v2h-2V9zM1 13h2v2H1v-2zm4 0h2v2H5v-2zm4 0h2v2H9v-2zm4 0h2v2h-2v-2zm4 0h2v2h-2v-2z' fill='${isDark ? '%23ffffff' : '%23000000'}' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E")` }; // Using placeholder grid for leaf for simplicity in this context or replace with actual leaf SVG
+        case 'diamond': return { backgroundImage: `linear-gradient(135deg, ${color} 25%, transparent 25%) -10px 0, linear-gradient(225deg, ${color} 25%, transparent 25%) -10px 0, linear-gradient(315deg, ${color} 25%, transparent 25%), linear-gradient(45deg, ${color} 25%, transparent 25%)`, backgroundSize: `20px 20px` };
+        case 'zigzag': return { backgroundImage: `linear-gradient(135deg, ${color} 25%, transparent 25%) -10px 0, linear-gradient(225deg, ${color} 25%, transparent 25%) -10px 0`, backgroundSize: `20px 20px` };
         default: return {};
     }
 };
@@ -162,16 +165,20 @@ const App: React.FC = () => {
             root.style.setProperty('--brand-900', rgb);
         }
 
-        // 5. Border Radius
-        const radiusMap = {
+        // 5. Border Radius & Interface Geometry
+        // Handle basic radius, but also complex styles
+        const radiusMap: Record<string, string> = {
             'none': '0px',
             'sm': '0.25rem',
             'md': '0.5rem',
             'lg': '0.75rem',
             'xl': '1rem',
-            '2xl': '1.5rem'
+            '2xl': '1.5rem',
+            'glass': '1rem', // Glass uses large radius
+            'prominent': '0.5rem' // Prominent uses medium radius
         };
-        root.style.setProperty('--radius-base', radiusMap[settings.borderRadius || 'xl']);
+        const currentRadius = settings.borderRadius || 'xl';
+        root.style.setProperty('--radius-base', radiusMap[currentRadius]);
 
         // 6. Animation Speed
         const speedMap = {
@@ -191,7 +198,7 @@ const App: React.FC = () => {
         };
         root.style.setProperty('--font-primary', fontMap[settings.fontStyle || 'sans']);
 
-        // Inject Dynamic Styles for Radius & Transition Overrides
+        // Inject Dynamic Styles for Radius, Transition, Glass, & Prominent Overrides
         const styleId = 'dynamic-theme-styles';
         let styleTag = document.getElementById(styleId);
         if (!styleTag) {
@@ -200,9 +207,35 @@ const App: React.FC = () => {
             document.head.appendChild(styleTag);
         }
 
+        let extraCSS = '';
+        if (currentRadius === 'glass') {
+            extraCSS = `
+                .bg-white, .dark .bg-slate-900, .bg-slate-900, .bg-gray-50, .bg-slate-50, .dark .bg-slate-950 {
+                   background-color: ${isDarkMode ? 'rgba(15, 23, 42, 0.7)' : 'rgba(255, 255, 255, 0.7)'} !important;
+                   backdrop-filter: blur(12px) !important;
+                   -webkit-backdrop-filter: blur(12px) !important;
+                   border: 1px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.5)'} !important;
+                }
+                .shadow-sm, .shadow-md, .shadow-lg, .shadow-xl {
+                    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15) !important;
+                }
+            `;
+        } else if (currentRadius === 'prominent') {
+            extraCSS = `
+                .rounded-xl, .rounded-2xl, .rounded-lg, .rounded-md, .rounded-sm, .rounded {
+                    border: 2px solid ${isDarkMode ? '#334155' : '#e2e8f0'} !important;
+                    box-shadow: 4px 4px 0px 0px ${isDarkMode ? '#1e293b' : '#cbd5e1'} !important;
+                }
+                button:active {
+                    transform: translate(2px, 2px) !important;
+                    box-shadow: 2px 2px 0px 0px ${isDarkMode ? '#1e293b' : '#cbd5e1'} !important;
+                }
+            `;
+        }
+
         styleTag.innerHTML = `
             :root {
-                --radius-base: ${radiusMap[settings.borderRadius || 'xl']};
+                --radius-base: ${radiusMap[currentRadius]};
                 --transition-speed: ${speedMap[settings.animationSpeed || 'normal']};
             }
             body {
@@ -214,6 +247,7 @@ const App: React.FC = () => {
             .transition-all, .transition-colors, .transition-opacity, .transition-transform {
                 transition-duration: var(--transition-speed) !important;
             }
+            ${extraCSS}
         `;
 
         // Inject Fonts

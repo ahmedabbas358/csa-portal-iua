@@ -81,7 +81,7 @@ const ThemeManager: React.FC<ThemeManagerProps> = ({ settings, onUpdateSettings 
     const patterns: BackgroundPattern[] = [
         'none', 'circles', 'cubes', 'dots', 'lines', 'waves',
         'grid', 'hexagons', 'circuit', 'topography', 'texture',
-        'gradient-radial', 'gradient-linear'
+        'gradient-radial', 'gradient-linear', 'leaf', 'diamond', 'zigzag'
     ];
 
     const filteredPresets = PRESET_THEMES.filter(
@@ -143,7 +143,7 @@ const ThemeManager: React.FC<ThemeManagerProps> = ({ settings, onUpdateSettings 
                                 <div>
                                     <h3 className="font-bold text-lg text-gray-900 dark:text-white">Quick Start</h3>
                                     <p className="text-sm text-blue-800 dark:text-blue-200 opacity-80">
-                                        Select from 128+ professionally curated themes to instantly transform your portal.
+                                        Select from 256+ professionally curated themes to instantly transform your portal.
                                     </p>
                                 </div>
                             </div>
@@ -276,29 +276,35 @@ const ThemeManager: React.FC<ThemeManagerProps> = ({ settings, onUpdateSettings 
                                             settings.borderRadius === 'sm' ? '0.25rem' :
                                                 settings.borderRadius === 'md' ? '0.5rem' :
                                                     settings.borderRadius === 'lg' ? '0.75rem' :
-                                                        settings.borderRadius === 'xl' ? '1rem' : '1.5rem'
+                                                        settings.borderRadius === 'xl' ? '1rem' :
+                                                            settings.borderRadius === '2xl' ? '1.5rem' :
+                                                                settings.borderRadius === 'glass' ? '1rem' : '4px'
                                     }}></div>
                                 </div>
 
                                 <div>
                                     <div className="flex justify-between items-center text-xs text-gray-500 font-bold uppercase mb-4">
                                         <span>Sharp</span>
-                                        <span>Full Round</span>
+                                        <span>Round</span>
                                     </div>
                                     <input
                                         type="range"
-                                        min="0" max="5"
+                                        min="0" max="7"
                                         step="1"
-                                        value={['none', 'sm', 'md', 'lg', 'xl', '2xl'].indexOf(settings.borderRadius || 'xl')}
+                                        value={['none', 'sm', 'md', 'lg', 'xl', '2xl', 'glass', 'prominent'].indexOf(settings.borderRadius || 'xl')}
                                         onChange={(e) => {
-                                            const vals = ['none', 'sm', 'md', 'lg', 'xl', '2xl'] as const;
+                                            const vals = ['none', 'sm', 'md', 'lg', 'xl', '2xl', 'glass', 'prominent'] as const;
                                             updateWithHistory({ ...settings, borderRadius: vals[parseInt(e.target.value)] });
                                         }}
                                         className="w-full h-2 bg-gray-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-brand-600"
                                     />
                                     <div className="text-center font-bold text-brand-600 bg-white dark:bg-slate-800 border border-brand-100 dark:border-brand-900/30 py-3 rounded-xl capitalize mt-4 shadow-sm">
-                                        {(settings.borderRadius || 'xl').replace('xl', 'Extra Large').replace('2xl', 'Full Round').replace('sm', 'Small').replace('md', 'Medium').replace('lg', 'Large')}
+                                        {(settings.borderRadius || 'xl').replace('xl', 'Extra Large').replace('2xl', 'Full Round').replace('sm', 'Small').replace('md', 'Medium').replace('lg', 'Large').replace('glass', 'Glass Design').replace('prominent', 'Bold & Prominent')}
                                     </div>
+                                    <p className="text-xs text-center text-gray-400 mt-2">
+                                        {settings.borderRadius === 'glass' && 'High blur, translucent backgrounds.'}
+                                        {settings.borderRadius === 'prominent' && 'Thick borders, heavy shadows.'}
+                                    </p>
                                 </div>
                             </div>
                         ))}

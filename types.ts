@@ -115,7 +115,7 @@ export interface AppSettings {
   missionAr: string;
   missionEn: string;
   backgroundPattern?: BackgroundPattern;
-  borderRadius?: 'none' | 'sm' | 'md' | 'lg' | 'xl' | '2xl'; // New: Border Radius Control
+  borderRadius?: 'none' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'glass' | 'prominent'; // Enhanced Border Radius Control
   animationSpeed?: 'slow' | 'normal' | 'fast'; // New: Animation Speed
   fontStyle?: 'sans' | 'serif' | 'mono' | 'cairo' | 'inter'; // New: Font Family
 }
