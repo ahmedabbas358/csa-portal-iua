@@ -13,21 +13,51 @@
     "start": "echo \"PORT is $PORT\" && serve -s dist -l tcp://0.0.0.0:$PORT"
   },
   "dependencies": {
-    "react-dom": "^19.2.4",
     "@google/genai": "^1.41.0",
+    "@prisma/client": "^7.4.0",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.3",
     "lucide-react": "^0.564.0",
+    "morgan": "^1.10.1",
+    "prisma": "^7.4.0",
     "react": "^19.2.4",
+    "react-dom": "^19.2.4",
     "serve": "^14.2.4"
   },
   "devDependencies": {
-    "@types/node": "^22.10.0",
+    "@types/bcrypt": "^6.0.0",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/helmet": "^0.0.48",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/morgan": "^1.9.10",
+    "@types/node": "^22.19.11",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.3.4",
-    "typescript": "^5.7.2",
-    "vite": "^6.0.0",
     "autoprefixer": "^10.4.20",
+    "nodemon": "^3.1.11",
     "postcss": "^8.4.49",
-    "tailwindcss": "^3.4.15"
-  }
+    "tailwindcss": "^3.4.15",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3",
+    "vite": "^6.0.0"
+  },
+  "description": "The official digital platform for the Computer Science Association at International University of Africa. A modern, high-performance web application designed to connect students with the latest tech news, events, and academic resources.",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ahmedabbas358/csa-portal-iua.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ahmedabbas358/csa-portal-iua/issues"
+  },
+  "homepage": "https://github.com/ahmedabbas358/csa-portal-iua#readme"
 }
