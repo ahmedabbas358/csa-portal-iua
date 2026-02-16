@@ -1,19 +1,18 @@
 import { AppSettings } from '../types';
+import { api } from './api';
 
 const STORAGE_KEY = 'csa_app_settings';
 
-// Mock API Service for Settings Persistence
-// In a real production environment, these methods would make HTTP requests to your backend API.
-
 export const saveSettings = async (settings: AppSettings): Promise<boolean> => {
     try {
-        // Simulate API delay
-        // await new Promise(resolve => setTimeout(resolve, 500));
-
+        // Always save locally for instant feedback
         localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
 
-        // Example backend call:
-        // await fetch('/api/settings', { method: 'POST', body: JSON.stringify(settings) });
+        // If logged in, sync with backend
+        const token = localStorage.getItem('token');
+        if (token) {
+            await api.theme.update(settings);
+        }
 
         return true;
     } catch (error) {
@@ -24,18 +23,27 @@ export const saveSettings = async (settings: AppSettings): Promise<boolean> => {
 
 export const loadSettings = async (): Promise<AppSettings | null> => {
     try {
-        // Simulate API delay
-        // await new Promise(resolve => setTimeout(resolve, 500));
+        // If logged in, try to fetch from backend
+        const token = localStorage.getItem('token');
+        if (token) {
+            try {
+                const remoteSettings = await api.theme.get();
+                if (remoteSettings && Object.keys(remoteSettings).length > 0) {
+                    const merged = { ...remoteSettings } as AppSettings;
+                    // Cache it
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+                    return merged;
+                }
+            } catch (e) {
+                console.warn("Backend sync failed, falling back to local");
+            }
+        }
 
-        // Try to load from local storage (or API)
+        // Fallback to local storage
         const stored = localStorage.getItem(STORAGE_KEY);
         if (stored) {
             return JSON.parse(stored) as AppSettings;
         }
-
-        // Example backend call:
-        // const res = await fetch('/api/settings');
-        // return await res.json();
 
         return null;
     } catch (error) {
