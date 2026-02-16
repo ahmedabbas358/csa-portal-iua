@@ -587,13 +587,17 @@ const Home: React.FC<HomeProps> = ({ lang, news, setNews, setPage, settings }) =
             />
 
             {/* --- Hero Section --- */}
-            <div className="relative bg-[#0B1120] overflow-hidden text-white shadow-2xl pb-10">
-                {/* Dynamic Background Effects */}
-                <div className="absolute inset-0 bg-gradient-to-b from-[#0f172a] via-[#023e8a] to-[#0077b6] opacity-90"></div>
-                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20 mixed-blend-overlay"></div>
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none">
-                    <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-blue-500/20 rounded-full blur-[100px]"></div>
-                    <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-cyan-500/20 rounded-full blur-[100px]"></div>
+            <div className="relative bg-[#0B1120] overflow-hidden text-white shadow-2xl pb-20">
+                {/* High Fidelity Background */}
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#1e40af] via-[#0f172a] to-[#020617]"></div>
+
+                {/* CSS-only Grid Pattern for Sharpness */}
+                <div className="absolute inset-0 z-0 opacity-20" style={{ backgroundImage: 'linear-gradient(#ffffff 1px, transparent 1px), linear-gradient(90deg, #ffffff 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
+
+                {/* Glowing Orbs */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none overflow-hidden">
+                    <div className="absolute top-[-10%] left-[20%] w-[600px] h-[600px] bg-brand-500/20 rounded-full blur-[120px] mix-blend-screen animate-pulse-slow"></div>
+                    <div className="absolute bottom-[-10%] right-[20%] w-[500px] h-[500px] bg-purple-500/10 rounded-full blur-[100px] mix-blend-screen"></div>
                 </div>
 
                 <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32 flex flex-col items-center text-center">
@@ -604,12 +608,12 @@ const Home: React.FC<HomeProps> = ({ lang, news, setNews, setPage, settings }) =
                     </div>
 
                     {/* Main Title */}
-                    <h1 className="text-5xl md:text-7xl lg:text-8xl font-black mb-6 md:mb-8 leading-tight tracking-tight drop-shadow-2xl bg-clip-text text-transparent bg-gradient-to-b from-white to-blue-100">
+                    <h1 className={`text-5xl md:text-7xl lg:text-8xl font-black mb-8 leading-tight tracking-tight drop-shadow-2xl text-transparent bg-clip-text bg-gradient-to-b from-white via-blue-50 to-blue-200 ${isRtl ? 'font-arabic' : 'font-sans'}`}>
                         {heroTitle}
                     </h1>
 
                     {/* Subtitle */}
-                    <p className="text-lg md:text-2xl text-blue-100 mb-10 md:mb-12 leading-relaxed max-w-3xl font-light px-4 opacity-90">
+                    <p className={`text-lg md:text-2xl text-blue-200/80 mb-12 leading-relaxed max-w-2xl font-light px-4 ${isRtl ? 'font-arabic' : 'font-sans'}`}>
                         {heroSubtitle}
                     </p>
 
@@ -617,10 +621,10 @@ const Home: React.FC<HomeProps> = ({ lang, news, setNews, setPage, settings }) =
                     <div className="flex flex-col sm:flex-row gap-5 justify-center w-full sm:w-auto">
                         <button
                             onClick={() => setPage('events')}
-                            className="group relative px-8 py-4 rounded-2xl font-bold text-white transition-all transform hover:-translate-y-1 hover:shadow-blue-500/30 shadow-lg flex items-center justify-center gap-3 overflow-hidden"
-                            style={{ background: 'linear-gradient(135deg, #0077b6 0%, #023e8a 100%)' }}
+                            className="group relative px-10 py-4 rounded-2xl font-bold text-white transition-all transform hover:-translate-y-1 hover:shadow-[0_10px_40px_-10px_rgba(14,165,233,0.5)] shadow-2xl flex items-center justify-center gap-3 overflow-hidden bg-brand-600"
                         >
-                            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                            <div className="absolute inset-0 bg-gradient-to-r from-brand-500 to-brand-600 opacity-100 group-hover:opacity-90 transition-opacity"></div>
+                            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mixed-blend-overlay"></div>
                             <span className="relative">{isRtl ? 'استكشف الفعاليات' : 'Explore Events'}</span>
                             {isRtl ? <ArrowRight className="rotate-180 relative" size={20} /> : <ArrowRight className="relative" size={20} />}
                         </button>
