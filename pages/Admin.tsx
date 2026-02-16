@@ -3,6 +3,7 @@ import { Plus, Trash2, LogOut, Sparkles, Loader2, Calendar, Users, Newspaper, La
 import { Language, EventItem, Member, NewsPost, AppSettings, MemberRole, PostDesignConfig, AppState, TimelineItem } from '../types';
 import { LABELS } from '../constants';
 import { generateContentHelper } from '../services/geminiService';
+import ThemeManager from '../components/ThemeManager';
 
 // --- HELPER FUNCTIONS ---
 
@@ -849,7 +850,7 @@ interface AdminProps {
 
 const Admin: React.FC<AdminProps> = ({ lang, onLogout, onGoHome, state }) => {
     const isRtl = lang === 'ar';
-    const [activeTab, setActiveTab] = useState<'dashboard' | 'news' | 'events' | 'team' | 'settings'>('dashboard');
+    const [activeTab, setActiveTab] = useState<'dashboard' | 'news' | 'events' | 'team' | 'settings' | 'themes'>('dashboard');
     const [viewMode, setViewMode] = useState<'list' | 'create' | 'edit'>('list');
     const [editingItem, setEditingItem] = useState<any>(null);
     const [currentPage, setCurrentPage] = useState(1);
@@ -930,7 +931,7 @@ const Admin: React.FC<AdminProps> = ({ lang, onLogout, onGoHome, state }) => {
                     <span className="font-black text-xl hidden md:block dark:text-white">Admin</span>
                 </div>
                 <nav className="flex-1 p-4 space-y-2">
-                    {[{ id: 'dashboard', icon: LayoutDashboard }, { id: 'news', icon: Newspaper }, { id: 'events', icon: Calendar }, { id: 'team', icon: Users }, { id: 'settings', icon: SettingsIcon }].map(item => (
+                    {[{ id: 'dashboard', icon: LayoutDashboard }, { id: 'news', icon: Newspaper }, { id: 'events', icon: Calendar }, { id: 'team', icon: Users }, { id: 'themes', icon: Palette }, { id: 'settings', icon: SettingsIcon }].map(item => (
                         <button key={item.id} onClick={() => { setActiveTab(item.id as any); setViewMode('list'); }} className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${activeTab === item.id ? 'bg-brand-50 dark:bg-slate-800 text-brand-600' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-slate-800'}`}>
                             <item.icon size={20} /><span className="hidden md:block text-sm capitalize">{item.id}</span>
                         </button>
@@ -959,6 +960,7 @@ const Admin: React.FC<AdminProps> = ({ lang, onLogout, onGoHome, state }) => {
                             <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800"><div className="flex items-center gap-4"><Users size={24} className="text-amber-600" /><div><p className="text-sm font-bold text-gray-400">Members</p><h3 className="text-2xl font-black dark:text-white">{state.members.length}</h3></div></div></div>
                         </div>
                     )}
+                    {activeTab === 'themes' && <ThemeManager settings={state.settings} onUpdateSettings={state.setSettings} />}
                     {activeTab === 'settings' && <SettingsEditor settings={state.settings} onSave={state.setSettings} timeline={state.timeline} onSaveTimeline={state.setTimeline} />}
                     {['news', 'events', 'team'].includes(activeTab) && (
                         <div className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-sm border border-gray-100 dark:border-slate-800 flex flex-col h-auto md:h-[calc(100vh-160px)] md:overflow-hidden animate-fade-in">

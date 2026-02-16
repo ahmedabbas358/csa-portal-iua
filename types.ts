@@ -114,6 +114,17 @@ export interface AppSettings {
   visionEn: string;
   missionAr: string;
   missionEn: string;
+  backgroundPattern?: BackgroundPattern;
+}
+
+export type BackgroundPattern = 'none' | 'cubes' | 'dots' | 'lines' | 'waves' | 'grid' | 'hexagons' | 'circuit' | 'leaf' | 'diamond' | 'zigzag' | 'circles' | 'topography' | 'texture' | 'gradient-radial' | 'gradient-linear';
+
+export interface ThemePreset {
+  id: string;
+  name: string;
+  primaryColor: string;
+  secondaryColor: string;
+  pattern: BackgroundPattern;
 }
 
 // --- SECURITY TYPES ---

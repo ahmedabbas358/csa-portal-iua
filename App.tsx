@@ -12,6 +12,27 @@ import { Language, AppState, AccessKey, ActiveSession, DeanSecurityConfig } from
 import { INITIAL_STATE, DEAN_MASTER_KEY } from './constants';
 import { Lock, ShieldCheck, AlertCircle, ScanLine, X, QrCode, KeyRound, HelpCircle, RefreshCw } from 'lucide-react';
 import Footer from './components/Footer';
+import { BackgroundPattern } from './types';
+
+// --- PATTERN HELPER ---
+const getPatternStyle = (pattern?: BackgroundPattern, isDark?: boolean): React.CSSProperties => {
+    const color = isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)';
+    switch (pattern) {
+        case 'dots': return { backgroundImage: `radial-gradient(${color} 1px, transparent 1px)`, backgroundSize: '24px 24px' };
+        case 'grid': return { backgroundImage: `linear-gradient(${color} 1px, transparent 1px), linear-gradient(90deg, ${color} 1px, transparent 1px)`, backgroundSize: '32px 32px' };
+        case 'circles': return { backgroundImage: `radial-gradient(circle, ${color} 2px, transparent 2.5px)`, backgroundSize: '24px 24px' };
+        case 'lines': return { backgroundImage: `repeating-linear-gradient(45deg, ${color} 0, ${color} 1px, transparent 0, transparent 50%)`, backgroundSize: '20px 20px' };
+        case 'waves': return { backgroundImage: `radial-gradient(circle at 100% 50%, transparent 20%, ${color} 21%, ${color} 34%, transparent 35%, transparent), radial-gradient(circle at 0% 50%, transparent 20%, ${color} 21%, ${color} 34%, transparent 35%, transparent) `, backgroundSize: '40px 40px' };
+        case 'hexagons': return { backgroundImage: `url("data:image/svg+xml,%3Csvg width='24' height='40' viewBox='0 0 24 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 40c5.523 0 10-4.477 10-10V10c0-5.523-4.477-10-10-10S-10 4.477-10 10v20c0 5.523 4.477 10 10 10z' fill='${isDark ? '%23ffffff' : '%23000000'}' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E")` };
+        case 'cubes': return { backgroundImage: `linear-gradient(30deg, ${color} 12%, transparent 12.5%, transparent 87%, ${color} 87.5%, ${color}), linear-gradient(150deg, ${color} 12%, transparent 12.5%, transparent 87%, ${color} 87.5%, ${color}), linear-gradient(30deg, ${color} 12%, transparent 12.5%, transparent 87%, ${color} 87.5%, ${color}), linear-gradient(150deg, ${color} 12%, transparent 12.5%, transparent 87%, ${color} 87.5%, ${color}), linear-gradient(60deg, ${color} 25%, transparent 25.5%, transparent 75%, ${color} 75%, ${color}), linear-gradient(60deg, ${color} 25%, transparent 25.5%, transparent 75%, ${color} 75%, ${color})`, backgroundSize: '40px 70px', backgroundPosition: '0 0, 0 0, 20px 35px, 20px 35px, 0 0, 20px 35px' };
+        case 'circuit': return { backgroundImage: `linear-gradient(${color} 2px, transparent 2px), linear-gradient(90deg, ${color} 2px, transparent 2px), linear-gradient(${color} 1px, transparent 1px), linear-gradient(90deg, ${color} 1px, transparent 1px)`, backgroundSize: '100px 100px, 100px 100px, 20px 20px, 20px 20px', backgroundPosition: '-2px -2px, -2px -2px, -1px -1px, -1px -1px' };
+        case 'texture': return { backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='${isDark ? '0.1' : '0.05'}'/%3E%3C/svg%3E")` };
+        case 'topography': return { backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='${isDark ? '%23ffffff' : '%23000000'}' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E")` };
+        case 'gradient-radial': return { backgroundImage: `radial-gradient(circle at center, ${color}, transparent 70%)` };
+        case 'gradient-linear': return { backgroundImage: `linear-gradient(135deg, ${color} 0%, transparent 100%)` };
+        default: return {};
+    }
+};
 
 const App: React.FC = () => {
     // State for content
@@ -53,7 +74,7 @@ const App: React.FC = () => {
 
     // --- INITIALIZATION ---
     useEffect(() => {
-        // Load Dean Config from LocalStorage
+        // Load Dean Config
         const storedConfig = localStorage.getItem('csa_dean_config');
         if (storedConfig) {
             try {
@@ -62,7 +83,22 @@ const App: React.FC = () => {
                 console.error("Failed to parse dean config");
             }
         }
+
+        // Load App Settings (Theme, etc.)
+        const storedSettings = localStorage.getItem('csa_app_settings');
+        if (storedSettings) {
+            try {
+                setSettings(JSON.parse(storedSettings));
+            } catch (e) {
+                console.error("Failed to parse app settings");
+            }
+        }
     }, []);
+
+    // Persist Settings
+    useEffect(() => {
+        localStorage.setItem('csa_app_settings', JSON.stringify(settings));
+    }, [settings]);
 
     // Update Dean Config Wrapper (to persist to localStorage)
     const updateDeanConfig = (newConfig: DeanSecurityConfig) => {
@@ -469,6 +505,14 @@ const App: React.FC = () => {
 
     return (
         <div className={`min-h-screen flex flex-col bg-slate-50 dark:bg-slate-900 text-gray-800 dark:text-gray-100 transition-colors duration-500 ${lang === 'ar' ? 'dir-rtl' : 'dir-ltr'}`} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+            {/* Global Pattern Overlay */}
+            {currentPage !== 'login' && currentPage !== 'dean-login' && currentPage !== 'dean-dashboard' && settings.backgroundPattern && settings.backgroundPattern !== 'none' && (
+                <div
+                    className="fixed inset-0 z-0 pointer-events-none opacity-100 transition-all duration-700 mix-blend-soft-light dark:mix-blend-overlay"
+                    style={getPatternStyle(settings.backgroundPattern, isDarkMode)}
+                />
+            )}
+
             {currentPage !== 'login' && currentPage !== 'dean-login' && currentPage !== 'dean-dashboard' && currentPage !== 'admin' && (
                 <Navbar
                     lang={lang}
