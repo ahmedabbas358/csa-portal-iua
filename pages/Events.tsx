@@ -292,7 +292,7 @@ const Events: React.FC<EventsProps> = ({ lang, events }) => {
     };
 
     return (
-        <div className={`min-h-screen py-12 md:py-20 bg-gray-50 dark:bg-slate-900 transition-colors duration-500 ${isRtl ? 'font-arabic text-right' : 'font-sans text-left'}`}>
+        <div className={`min-h-screen pt-24 md:pt-32 pb-12 bg-gray-50 dark:bg-slate-900 transition-colors duration-500 ${isRtl ? 'font-arabic text-right' : 'font-sans text-left'}`}>
 
             {viewingImage && <ImageViewer src={viewingImage} alt="Full View" onClose={() => setViewingImage(null)} />}
 

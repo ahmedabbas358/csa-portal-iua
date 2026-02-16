@@ -405,9 +405,6 @@ const Home: React.FC<HomeProps> = ({ lang, news, setNews, setPage, settings }) =
     // View Image State
     const [viewingImage, setViewingImage] = useState<string | null>(null);
 
-    // Hero Theme State
-    const [heroTheme, setHeroTheme] = useState('default');
-
     // View counting refs
     const viewedSession = useRef<Set<string>>(new Set());
     const observer = useRef<IntersectionObserver | null>(null);
@@ -590,135 +587,43 @@ const Home: React.FC<HomeProps> = ({ lang, news, setNews, setPage, settings }) =
             />
 
             {/* --- Hero Section --- */}
-            {/* Theme Switcher UI */}
-            <div className={`absolute top-4 ${isRtl ? 'left-4' : 'right-4'} z-50 flex gap-2 p-2 bg-black/20 backdrop-blur-lg rounded-full border border-white/10 opacity-0 hover:opacity-100 transition-opacity duration-300`}>
-                {['default', 'purple', 'emerald', 'midnight', 'royal'].map((theme) => (
-                    <button
-                        key={theme}
-                        onClick={() => setHeroTheme(theme)}
-                        className={`w-4 h-4 rounded-full transition-all border-2 ${heroTheme === theme ? 'border-white scale-125' : 'border-transparent hover:scale-110'}`}
-                        style={{
-                            backgroundColor:
-                                theme === 'default' ? '#1e40af' :
-                                    theme === 'purple' ? '#7c3aed' :
-                                        theme === 'emerald' ? '#059669' :
-                                            theme === 'midnight' ? '#0f172a' :
-                                                '#be185d' // royal/pink
-                        }}
-                        title={`Theme: ${theme}`}
-                    />
-                ))}
-            </div>
+            <div className="relative bg-brand-900 overflow-hidden text-white shadow-2xl">
+                <div className="absolute inset-0 bg-gradient-to-br from-brand-900 via-brand-800 to-black opacity-90"></div>
+                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
 
-            <div className={`relative overflow-hidden text-white shadow-2xl pb-20 transition-colors duration-1000 ease-in-out`}
-                style={{
-                    backgroundColor:
-                        heroTheme === 'default' ? '#0B1120' :
-                            heroTheme === 'purple' ? '#2e1065' :
-                                heroTheme === 'emerald' ? '#022c22' :
-                                    heroTheme === 'midnight' ? '#020617' :
-                                        '#4a044e'
-                }}
-            >
-                {/* Dynamic Backgrounds */}
-                {heroTheme === 'default' && (
-                    <>
-                        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#1e40af] via-[#0f172a] to-[#020617] animate-fade-in"></div>
-                        <div className="absolute inset-0 z-0 opacity-20" style={{ backgroundImage: 'linear-gradient(#ffffff 1px, transparent 1px), linear-gradient(90deg, #ffffff 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
-                    </>
-                )}
-
-                {heroTheme === 'purple' && (
-                    <>
-                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#7c3aed] via-[#4c1d95] to-[#2e1065] animate-fade-in"></div>
-                        <div className="absolute inset-0 z-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
-                    </>
-                )}
-
-                {heroTheme === 'emerald' && (
-                    <>
-                        <div className="absolute inset-0 bg-gradient-to-br from-[#059669] via-[#065f46] to-[#022c22] animate-fade-in"></div>
-                        <div className="absolute inset-0 z-0 opacity-10" style={{ backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)', backgroundSize: '30px 30px' }}></div>
-                    </>
-                )}
-
-                {heroTheme === 'midnight' && (
-                    <>
-                        <div className="absolute inset-0 bg-slate-950 animate-fade-in"></div>
-                        <div className="absolute inset-0 opacity-30 bg-[radial-gradient(#3b82f6_1px,transparent_1px)] [background-size:16px_16px]"></div>
-                        <div className="absolute inset-0 bg-[radial-gradient(circle_800px_at_50%_200px,#3b82f6,transparent)] opacity-20"></div>
-                    </>
-                )}
-
-                {heroTheme === 'royal' && (
-                    <>
-                        <div className="absolute inset-0 bg-[conic-gradient(at_top,_var(--tw-gradient-stops))] from-gray-900 via-rose-900 to-gray-900 animate-fade-in"></div>
-                        <div className="absolute inset-0 z-0 opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
-                    </>
-                )}
-
-                {/* Glowing Orbs (Common but colored differently) */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none overflow-hidden">
-                    <div className={`absolute top-[-10%] left-[20%] w-[600px] h-[600px] rounded-full blur-[120px] mix-blend-screen animate-pulse-slow ${heroTheme === 'default' ? 'bg-brand-500/20' :
-                        heroTheme === 'purple' ? 'bg-fuchsia-500/20' :
-                            heroTheme === 'emerald' ? 'bg-teal-500/20' :
-                                heroTheme === 'midnight' ? 'bg-blue-600/10' :
-                                    'bg-red-500/20'
-                        }`}></div>
-
-                    <div className={`absolute bottom-[-10%] right-[20%] w-[500px] h-[500px] rounded-full blur-[100px] mix-blend-screen ${heroTheme === 'default' ? 'bg-purple-500/10' :
-                        heroTheme === 'purple' ? 'bg-indigo-500/10' :
-                            heroTheme === 'emerald' ? 'bg-lime-500/10' :
-                                heroTheme === 'midnight' ? 'bg-cyan-500/10' :
-                                    'bg-orange-500/10'
-                        }`}></div>
+                {/* Bottom Wave Shape */}
+                <div className="absolute bottom-0 left-0 right-0 z-10 w-full overflow-hidden leading-none rotate-180">
+                    <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none" className="relative block w-[calc(100%+1.3px)] h-[60px] md:h-[100px] fill-gray-50 dark:fill-slate-900">
+                        <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z"></path>
+                    </svg>
                 </div>
 
-                <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32 flex flex-col items-center text-center">
-                    {/* Badge */}
-                    <div className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-sm font-medium mb-8 text-blue-50 shadow-lg animate-fade-in hover:bg-white/15 transition-colors cursor-default">
-                        <span>✨</span>
-                        <span>{isRtl ? 'البوابة الرسمية للجمعية' : 'Official Association Portal'}</span>
+                <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-28 flex flex-col items-center text-center">
+                    <div className="inline-block px-4 py-1.5 md:px-5 md:py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs md:text-sm font-bold mb-6 md:mb-8 text-brand-100 shadow-lg animate-fade-in">
+                        {isRtl ? '✨ البوابة الرسمية للجمعية' : '✨ Official Association Portal'}
                     </div>
-
-                    {/* Main Title */}
-                    <h1 className={`text-5xl md:text-7xl lg:text-8xl font-black mb-8 leading-tight tracking-tight drop-shadow-2xl text-transparent bg-clip-text bg-gradient-to-b from-white via-blue-50 to-blue-200 ${isRtl ? 'font-arabic' : 'font-sans'}`}>
+                    <h1 className="text-4xl md:text-7xl font-extrabold mb-4 md:mb-6 leading-tight tracking-tight drop-shadow-lg">
                         {heroTitle}
                     </h1>
-
-                    {/* Subtitle */}
-                    <p className={`text-lg md:text-2xl text-blue-200/80 mb-12 leading-relaxed max-w-2xl font-light px-4 ${isRtl ? 'font-arabic' : 'font-sans'}`}>
+                    <p className="text-lg md:text-2xl text-gray-300 mb-8 md:mb-10 leading-relaxed max-w-3xl font-light px-2">
                         {heroSubtitle}
                     </p>
-
-                    {/* CTA Buttons */}
-                    <div className="flex flex-col sm:flex-row gap-5 justify-center w-full sm:w-auto">
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center w-full sm:w-auto">
                         <button
                             onClick={() => setPage('events')}
-                            className="group relative px-10 py-4 rounded-2xl font-bold text-white transition-all transform hover:-translate-y-1 hover:shadow-[0_10px_40px_-10px_rgba(14,165,233,0.5)] shadow-2xl flex items-center justify-center gap-3 overflow-hidden bg-brand-600"
+                            className="px-8 py-4 rounded-xl font-bold text-white transition-all transform hover:-translate-y-1 hover:shadow-2xl flex items-center justify-center gap-2"
+                            style={{ backgroundColor: settings.primaryColor, boxShadow: `0 10px 20px -5px ${settings.primaryColor}80`, color: 'var(--primary-contrast)' }}
                         >
-                            <div className="absolute inset-0 bg-gradient-to-r from-brand-500 to-brand-600 opacity-100 group-hover:opacity-90 transition-opacity"></div>
-                            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mixed-blend-overlay"></div>
-                            <span className="relative">{isRtl ? 'استكشف الفعاليات' : 'Explore Events'}</span>
-                            {isRtl ? <ArrowRight className="rotate-180 relative" size={20} /> : <ArrowRight className="relative" size={20} />}
+                            {isRtl ? 'استكشف الفعاليات' : 'Explore Events'}
+                            {isRtl ? <ArrowRight className="rotate-180" size={20} /> : <ArrowRight size={20} />}
                         </button>
-
                         <button
                             onClick={() => setPage('about')}
-                            className="px-8 py-4 rounded-2xl font-bold bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white hover:text-blue-900 transition-all transform hover:-translate-y-1 shadow-lg"
+                            className="px-8 py-4 rounded-xl font-bold bg-white text-brand-900 hover:bg-gray-100 transition-all transform hover:-translate-y-1 shadow-lg"
                         >
                             {isRtl ? 'تعرف علينا' : 'About Us'}
                         </button>
                     </div>
-                </div>
-
-                {/* Decorative curve at bottom */}
-                <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-none z-10">
-                    <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none" className="relative block w-full h-[60px] md:h-[100px] fill-gray-50 dark:fill-slate-900 transition-colors duration-500">
-                        <path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" opacity=".25" className="fill-white dark:fill-slate-800"></path>
-                        <path d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z" opacity=".5" className="fill-white dark:fill-slate-800"></path>
-                        <path d="M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z"></path>
-                    </svg>
                 </div>
             </div>
 
