@@ -464,8 +464,13 @@ const Home: React.FC<HomeProps> = ({ lang, news, setNews, setPage, settings }) =
 
     // --- LIKE FUNCTIONALITY ---
     const [likedPosts, setLikedPosts] = useState<Set<string>>(() => {
-        const saved = localStorage.getItem('csa_user_likes');
-        return saved ? new Set(JSON.parse(saved)) : new Set();
+        try {
+            const saved = localStorage.getItem('csa_user_likes');
+            return saved ? new Set(JSON.parse(saved)) : new Set();
+        } catch (e) {
+            console.error("Failed to load likes from localStorage", e);
+            return new Set();
+        }
     });
 
     useEffect(() => {
