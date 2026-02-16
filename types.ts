@@ -116,18 +116,20 @@ export interface AppSettings {
   missionEn: string;
   backgroundPattern?: BackgroundPattern;
   borderRadius?: 'none' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'glass' | 'prominent'; // Enhanced Border Radius Control
-  animationSpeed?: 'slow' | 'normal' | 'fast'; // New: Animation Speed
-  fontStyle?: 'sans' | 'serif' | 'mono' | 'cairo' | 'inter'; // New: Font Family
+  animationSpeed?: 'slow' | 'normal' | 'fast';
+  fontStyle?: 'sans' | 'serif' | 'mono' | 'cairo' | 'inter';
+  iconStyle?: string; // New: 90+ Icon Variations
 }
 
-export type BackgroundPattern = 'none' | 'cubes' | 'dots' | 'lines' | 'waves' | 'grid' | 'hexagons' | 'circuit' | 'leaf' | 'diamond' | 'zigzag' | 'circles' | 'topography' | 'texture' | 'gradient-radial' | 'gradient-linear';
+export type BackgroundPattern = string; // Allow dynamic generation (128+ patterns)
 
 export interface ThemePreset {
   id: string;
   name: string;
   primaryColor: string;
   secondaryColor: string;
-  pattern: BackgroundPattern;
+  pattern: string;
+  iconStyle?: string;
 }
 
 // --- SECURITY TYPES ---

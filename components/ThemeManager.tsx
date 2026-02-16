@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { AppSettings, BackgroundPattern, ThemePreset } from '../types';
 import { PRESET_THEMES } from '../utils/themes';
+import { ALL_PATTERNS, ICON_STYLES, getIconStyleCSS } from '../utils/styleEngine';
 import {
     Check, Palette, Grid, Layers, Zap, CheckCircle2, RotateCcw,
     Undo2, Redo2, Sliders, Type, MousePointerClick,
-    BoxSelect, Search, Minus
+    BoxSelect, Search, Minus, UserCircle
 } from 'lucide-react';
 import { INITIAL_STATE } from '../constants';
 
@@ -78,11 +79,9 @@ const ThemeManager: React.FC<ThemeManagerProps> = ({ settings, onUpdateSettings 
     };
 
     // --- DATA ---
-    const patterns: BackgroundPattern[] = [
-        'none', 'circles', 'cubes', 'dots', 'lines', 'waves',
-        'grid', 'hexagons', 'circuit', 'topography', 'texture',
-        'gradient-radial', 'gradient-linear', 'leaf', 'diamond', 'zigzag'
-    ];
+    // Use the massive list from Style Engine
+    const [patternSearch, setPatternSearch] = useState('');
+    const filteredPatterns = ALL_PATTERNS.filter(p => p.includes(patternSearch));
 
     const filteredPresets = PRESET_THEMES.filter(
         t => t.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -236,30 +235,41 @@ const ThemeManager: React.FC<ThemeManagerProps> = ({ settings, onUpdateSettings 
                         {/* Patterns */}
                         <div className="xl:col-span-2">
                             {renderFeatureControl("Background Pattern", <Layers size={20} />, (
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                    {patterns.map(p => (
-                                        <button
-                                            key={p}
-                                            onClick={() => updateWithHistory({ ...settings, backgroundPattern: p })}
-                                            className={`relative p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-3 overflow-hidden group ${settings.backgroundPattern === p ? 'border-brand-500 bg-brand-50 dark:bg-brand-900/10' : 'border-gray-100 dark:border-slate-700 hover:border-gray-200 dark:hover:border-slate-600 bg-gray-50/50 dark:bg-slate-800/50'}`}
-                                        >
-                                            <div className="w-full h-20 bg-white dark:bg-slate-900 rounded-lg overflow-hidden relative border border-gray-100 dark:border-slate-700">
-                                                <div className="absolute inset-0 opacity-10" style={{
-                                                    backgroundImage: p === 'dots' ? 'radial-gradient(currentColor 1px, transparent 1px)' : undefined,
-                                                    backgroundSize: '10px 10px'
-                                                }}>
-                                                    {/* Simple visual proxy for pattern */}
-                                                    <div className={`w-full h-full ${p === 'none' ? '' : 'pattern-preview'}`}></div>
+                                <>
+                                    <div className="mb-4">
+                                        <input
+                                            type="text"
+                                            placeholder="Search patterns (e.g. dots, circles, abstract)..."
+                                            className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-sm"
+                                            value={patternSearch}
+                                            onChange={e => setPatternSearch(e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-h-[600px] overflow-y-auto custom-scrollbar pr-2">
+                                        {filteredPatterns.map(p => (
+                                            <button
+                                                key={p}
+                                                onClick={() => updateWithHistory({ ...settings, backgroundPattern: p as BackgroundPattern })}
+                                                className={`relative p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-3 overflow-hidden group ${settings.backgroundPattern === p ? 'border-brand-500 bg-brand-50 dark:bg-brand-900/10' : 'border-gray-100 dark:border-slate-700 hover:border-gray-200 dark:hover:border-slate-600 bg-gray-50/50 dark:bg-slate-800/50'}`}
+                                            >
+                                                <div className="w-full h-20 bg-white dark:bg-slate-900 rounded-lg overflow-hidden relative border border-gray-100 dark:border-slate-700">
+                                                    <div className="absolute inset-0 opacity-10" style={{
+                                                        backgroundImage: p.includes('dots') ? 'radial-gradient(currentColor 1px, transparent 1px)' : undefined,
+                                                        backgroundSize: '10px 10px'
+                                                    }}>
+                                                        {/* Simple visual proxy for pattern */}
+                                                        <div className={`w-full h-full ${p === 'none' ? '' : 'pattern-preview'}`}></div>
+                                                    </div>
+                                                    <div className="absolute inset-0 flex items-center justify-center text-gray-300 dark:text-slate-600">
+                                                        {p === 'none' ? <Minus size={24} /> : <Grid size={24} />}
+                                                    </div>
                                                 </div>
-                                                <div className="absolute inset-0 flex items-center justify-center text-gray-300 dark:text-slate-600">
-                                                    {p === 'none' ? <Minus size={24} /> : <Grid size={24} />}
-                                                </div>
-                                            </div>
-                                            <span className="text-xs font-bold capitalize text-gray-600 dark:text-gray-400 group-hover:text-brand-600 transition-colors">{p.replace('-', ' ')}</span>
-                                            {settings.backgroundPattern === p && <div className="absolute top-2 right-2 text-brand-600 bg-white dark:bg-slate-800 rounded-full shadow-sm"><CheckCircle2 size={18} fill="currentColor" className="text-white" /></div>}
-                                        </button>
-                                    ))}
-                                </div>
+                                                <span className="text-xs font-bold capitalize text-gray-600 dark:text-gray-400 group-hover:text-brand-600 transition-colors truncate w-full text-center" title={p}>{p.replace(/-/g, ' ')}</span>
+                                                {settings.backgroundPattern === p && <div className="absolute top-2 right-2 text-brand-600 bg-white dark:bg-slate-800 rounded-full shadow-sm"><CheckCircle2 size={18} fill="currentColor" className="text-white" /></div>}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </>
                             ))}
                         </div>
                     </div>
@@ -267,7 +277,7 @@ const ThemeManager: React.FC<ThemeManagerProps> = ({ settings, onUpdateSettings 
 
                 {/* FEATURES TAB */}
                 {activeTab === 'features' && (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 animate-fade-in">
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 animate-fade-in">
                         {renderFeatureControl("Interface Geometry", <BoxSelect size={20} />, (
                             <div className="space-y-6">
                                 <div className="p-6 bg-brand-50 dark:bg-brand-900/10 rounded-2xl flex items-center justify-center h-32 mb-4">
@@ -320,9 +330,9 @@ const ThemeManager: React.FC<ThemeManagerProps> = ({ settings, onUpdateSettings 
                                             className={`w-full p-4 rounded-xl flex items-center justify-between transition-all ${settings.animationSpeed === s ? 'bg-brand-600 text-white shadow-lg shadow-brand-500/30' : 'bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-gray-400 hover:bg-gray-100'}`}
                                         >
                                             <span className="font-bold capitalize">{s}</span>
-                                            {s === 'slow' && <span className="text-xs opacity-70">Cinematic (500ms)</span>}
-                                            {s === 'normal' && <span className="text-xs opacity-70">Balanced (300ms)</span>}
-                                            {s === 'fast' && <span className="text-xs opacity-70">Snappy (150ms)</span>}
+                                            {s === 'slow' && <span className="text-xs opacity-70">Cinematic</span>}
+                                            {s === 'normal' && <span className="text-xs opacity-70">Balanced</span>}
+                                            {s === 'fast' && <span className="text-xs opacity-70">Snappy</span>}
                                             {settings.animationSpeed === s && <CheckCircle2 size={18} />}
                                         </button>
                                     ))}
@@ -333,17 +343,39 @@ const ThemeManager: React.FC<ThemeManagerProps> = ({ settings, onUpdateSettings 
                         {renderFeatureControl("Global Typography", <Type size={20} />, (
                             <div className="space-y-4">
                                 <p className="text-sm text-gray-500 dark:text-gray-400">Select the primary font family for the entire portal.</p>
-                                <div className="space-y-2">
+                                <div className="space-y-2 max-h-[300px] overflow-y-auto custom-scrollbar pr-1">
                                     {(['cairo', 'inter', 'sans', 'serif', 'mono'] as const).map(f => (
                                         <button
                                             key={f}
                                             onClick={() => updateWithHistory({ ...settings, fontStyle: f })}
                                             className={`w-full py-4 px-5 rounded-xl text-left flex justify-between items-center border-2 transition-all ${settings.fontStyle === f ? 'border-brand-500 bg-brand-50 dark:bg-brand-900/10 text-brand-700' : 'border-transparent bg-gray-50 dark:bg-slate-800 hover:border-gray-200'}`}
                                         >
-                                            <span className={`text-base ${(f === 'cairo' || f === 'inter') ? 'font-bold' : ''} ${f === 'mono' ? 'font-mono' : f === 'serif' ? 'font-serif' : 'font-sans'}`}>
-                                                {f === 'cairo' ? 'Cairo (Modern Arabic)' : f === 'inter' ? 'Inter (Clean UI)' : f === 'mono' ? 'Monospace Code' : f.charAt(0).toUpperCase() + f.slice(1)}
+                                            <span className={`text-sm ${(f === 'cairo' || f === 'inter') ? 'font-bold' : ''} ${f === 'mono' ? 'font-mono' : f === 'serif' ? 'font-serif' : 'font-sans'}`}>
+                                                {f === 'cairo' ? 'Cairo' : f === 'inter' ? 'Inter' : f === 'mono' ? 'Code' : f.charAt(0).toUpperCase() + f.slice(1)}
                                             </span>
-                                            {settings.fontStyle === f && <CheckCircle2 size={18} className="text-brand-600" />}
+                                            {settings.fontStyle === f && <CheckCircle2 size={16} className="text-brand-600" />}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+
+                        {/* NEW: ICONOGRAPHY CONTROL */}
+                        {renderFeatureControl("Icon Shape & Style", <UserCircle size={20} />, (
+                            <div className="space-y-4">
+                                <p className="text-sm text-gray-500 dark:text-gray-400">Customize the appearance of all system icons.</p>
+                                <div className="grid grid-cols-2 gap-3 max-h-[400px] overflow-y-auto custom-scrollbar pr-2">
+                                    {ICON_STYLES.map(style => (
+                                        <button
+                                            key={style.id}
+                                            onClick={() => updateWithHistory({ ...settings, iconStyle: style.id })}
+                                            className={`p-3 rounded-lg border text-left text-xs font-bold transition-all flex flex-col items-center gap-2 ${settings.iconStyle === style.id ? 'border-brand-500 bg-brand-50 dark:bg-brand-900/10 text-brand-700' : 'border-gray-100 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800'}`}
+                                        >
+                                            {/* Preview Icon */}
+                                            <div className="w-10 h-10 flex items-center justify-center bg-gray-200 dark:bg-slate-700 text-gray-600 dark:text-gray-300 transition-all" style={{ cssText: style.css } as any}>
+                                                <Zap size={18} />
+                                            </div>
+                                            <span className="text-center w-full truncate">{style.label}</span>
                                         </button>
                                     ))}
                                 </div>
