@@ -678,7 +678,7 @@ app.delete('/api/upload/:filename', verifyAnyAuth, asyncHandler(async (req, res)
 // ═══════════════════════════════════════════════════════════════════
 
 // API 404 Handler (Keep API errors as JSON)
-app.use('/api/*', (req, res) => {
+app.use('/api', (req, res) => {
     res.status(404).json({ error: 'API endpoint not found' });
 });
 
