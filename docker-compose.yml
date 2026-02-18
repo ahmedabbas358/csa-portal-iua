@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  csa-portal:
+    build: .
+    image: csa-portal:latest
+    container_name: csa-portal
+    restart: always
+    ports:
+      - "3000:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DATABASE_URL=file:/app/data/dev.db
+      - JWT_SECRET=csa-secret-key-change-me-in-production
+    volumes:
+      - ./csa_data:/app/data
+      - ./csa_uploads:/app/server/uploads

@@ -676,6 +676,24 @@ app.delete('/api/upload/:filename', verifyAnyAuth, asyncHandler(async (req, res)
 }));
 
 // ═══════════════════════════════════════════════════════════════════
+// SERVE FRONTEND (PRODUCTION)
+// ═══════════════════════════════════════════════════════════════════
+
+// API 404 Handler (Keep API errors as JSON)
+app.use('/api/*', (req, res) => {
+    res.status(404).json({ error: 'API endpoint not found' });
+});
+
+// Serve Static Frontend
+const distPath = path.resolve(__dirname, '../../dist');
+if (fs.existsSync(distPath)) {
+    app.use(express.static(distPath));
+    app.get('*', (req, res) => {
+        res.sendFile(path.join(distPath, 'index.html'));
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════════
 // GLOBAL ERROR HANDLER
 // ═══════════════════════════════════════════════════════════════════
 

@@ -10,7 +10,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "start": "echo \"PORT is $PORT\" && serve -s dist -l tcp://0.0.0.0:$PORT",
+    "start": "ts-node server/src/index.ts",
     "server": "ts-node server/src/index.ts",
     "db:generate": "prisma generate --schema=server/prisma/schema.prisma",
     "db:push": "prisma db push --schema=server/prisma/schema.prisma",
