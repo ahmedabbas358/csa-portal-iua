@@ -117,8 +117,8 @@ const verifyAdminToken = async (req: Request, res: Response, next: NextFunction)
     }
 };
 
-// ─── Health Check / Root Route ──────────────────────────────────────
-app.get('/', (_req, res) => {
+// ─── Health Check ───────────────────────────────────────────────────
+app.get('/api/health', (_req, res) => {
     res.json({ status: 'ok', message: 'CSA Portal API is running', version: '1.0.0' });
 });
 app.get('/api', (_req, res) => {
