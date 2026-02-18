@@ -70,7 +70,7 @@ model TimelineItem {
 model AppSetting {
   id                String  @id @default("main")
   siteNameEn        String  @default("CS Student Association")
-  siteNameAr        String  @default("جمعية طلاب الحاسوب")
+  siteNameAr        String  @default("CSA")
   logoUrl           String  @default("")
   primaryColor      String  @default("#0284c7")
   secondaryColor    String  @default("#0c4a6e")
