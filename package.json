@@ -1,24 +1,21 @@
 {
-  "name": "csa-portal-iua",
+  "name": "csa---computer-science-association-portal",
   "private": true,
-  "version": "1.0.0",
+  "version": "0.0.0",
   "type": "module",
   "engines": {
     "node": ">=20.0.0"
   },
   "scripts": {
     "dev": "vite",
-    "build": "npx prisma generate && tsc -p tsconfig.server.json && vite build",
+    "build": "vite build",
     "preview": "vite preview",
-    "prestart": "sh -c \"DATABASE_URL=${DATABASE_URL:-file:./prisma/dev.db} npx prisma db push --accept-data-loss && DATABASE_URL=${DATABASE_URL:-file:./prisma/dev.db} npx prisma db seed\"",
-    "start": "node --loader ts-node/esm --no-warnings server/src/index.ts",
-    "server": "node --loader ts-node/esm --no-warnings server/src/index.ts",
-    "db:push": "DATABASE_URL=file:./prisma/dev.db npx prisma db push",
-    "db:studio": "DATABASE_URL=file:./prisma/dev.db npx prisma studio",
-    "db:seed": "DATABASE_URL=file:./prisma/dev.db npx prisma db seed"
-  },
-  "prisma": {
-    "seed": "node --loader ts-node/esm prisma/seed.ts"
+    "start": "ts-node server/src/index.ts",
+    "server": "ts-node server/src/index.ts",
+    "db:generate": "prisma generate --schema=server/prisma/schema.prisma",
+    "db:push": "prisma db push --schema=server/prisma/schema.prisma",
+    "db:studio": "prisma studio --schema=server/prisma/schema.prisma",
+    "db:seed": "npx ts-node server/prisma/seed.ts"
   },
   "dependencies": {
     "@google/genai": "^1.41.0",
@@ -31,15 +28,12 @@
     "lucide-react": "^0.564.0",
     "morgan": "^1.10.1",
     "multer": "^2.0.2",
-    "prisma": "^5.10.0",
-    "@prisma/client": "^5.10.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "serve": "^14.2.4",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
+    "serve": "^14.2.4"
   },
   "devDependencies": {
+    "@prisma/client": "^5.10.0",
     "@types/bcrypt": "^6.0.0",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
@@ -54,7 +48,23 @@
     "autoprefixer": "^10.4.20",
     "nodemon": "^3.1.11",
     "postcss": "^8.4.49",
+    "prisma": "^5.10.0",
     "tailwindcss": "^3.4.15",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3",
     "vite": "^6.0.0"
-  }
+  },
+  "description": "The official digital platform for the Computer Science Association at International University of Africa. A modern, high-performance web application designed to connect students with the latest tech news, events, and academic resources.",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ahmedabbas358/csa-portal-iua.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ahmedabbas358/csa-portal-iua/issues"
+  },
+  "homepage": "https://github.com/ahmedabbas358/csa-portal-iua#readme"
 }

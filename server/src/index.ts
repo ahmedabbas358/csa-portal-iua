@@ -20,22 +20,9 @@ const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
-// ENSURE DATABASE_URL is set before PrismaClient is initialized
-if (!process.env.DATABASE_URL) {
-    process.env.DATABASE_URL = 'file:./prisma/dev.db';
-}
-
 const app = express();
 const prisma = new PrismaClient();
-const PORT = process.env.PORT || 8080;
-
-console.log('🛠️ Server Startup Config:');
-console.log(`- PORT: ${PORT}`);
-console.log(`- DATABASE_URL: ${process.env.DATABASE_URL ? 'PRESENT (Masked)' : 'MISSING'}`);
-if (process.env.NODE_ENV !== 'production') {
-    console.log(`- RAW DB URL: ${process.env.DATABASE_URL}`);
-}
-
+const PORT = process.env.PORT || 3001;
 const JWT_SECRET = process.env.JWT_SECRET || 'csa-portal-secret-key-2024-change-in-production';
 const SALT_ROUNDS = 10;
 
@@ -130,8 +117,8 @@ const verifyAdminToken = async (req: Request, res: Response, next: NextFunction)
     }
 };
 
-// ─── Health Check ───────────────────────────────────────────────────
-app.get('/api/health', (_req, res) => {
+// ─── Health Check / Root Route ──────────────────────────────────────
+app.get('/', (_req, res) => {
     res.json({ status: 'ok', message: 'CSA Portal API is running', version: '1.0.0' });
 });
 app.get('/api', (_req, res) => {
@@ -197,7 +184,7 @@ app.post('/api/auth/dean/login', asyncHandler(async (req, res) => {
         return res.status(500).json({ error: 'System not initialized' });
     }
 
-    const isValid = await bcrypt.compare(masterKey.trim(), config.masterKey);
+    const isValid = await bcrypt.compare(masterKey, config.masterKey);
     if (!isValid) {
         return res.status(401).json({ error: 'Invalid master key' });
     }
@@ -390,19 +377,30 @@ app.post('/api/auth/admin/logout', asyncHandler(async (req, res) => {
 // DEAN-PROTECTED ROUTES (Manage system)
 // ═══════════════════════════════════════════════════════════════════
 
-// Access Key Management
+// ─── Access Key Management ──────────────────────────────────────────
 app.get('/api/dean/access-keys', verifyDeanToken, asyncHandler(async (_req, res) => {
     const keys = await prisma.accessKey.findMany({ orderBy: { generatedAt: 'desc' } });
     res.json(keys);
 }));
 
+app.post('/api/dean/access-keys', verifyDeanToken, asyncHandler(async (req, res) => {
+    const { role, expiresInDays = 30 } = req.body;
+    const token = `CSA-${role?.replace(/\s+/g, '').toUpperCase().slice(0, 4)}-${crypto.randomBytes(8).toString('hex').toUpperCase()}`;
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + expiresInDays);
+
+    const key = await prisma.accessKey.create({
+        data: { token, role: role || 'Admin', expiresAt }
+    });
+    res.json(key);
+}));
+
 app.delete('/api/dean/access-keys/:id', verifyDeanToken, asyncHandler(async (req, res) => {
-    const id = typeof req.params.id === 'string' ? req.params.id : String(req.params.id);
-    await prisma.accessKey.delete({ where: { id } });
+    await prisma.accessKey.delete({ where: { id: req.params.id } });
     res.json({ success: true });
 }));
 
-// Session Management
+// ─── Session Management (Dean views all sessions) ───────────────────
 app.get('/api/dean/sessions', verifyDeanToken, asyncHandler(async (_req, res) => {
     const deanSessions = await prisma.deanSession.findMany({ orderBy: { createdAt: 'desc' } });
     const adminSessions = await prisma.adminSession.findMany({ orderBy: { loginTime: 'desc' } });
@@ -487,14 +485,12 @@ app.post('/api/events', verifyAnyAuth, asyncHandler(async (req, res) => {
 }));
 
 app.put('/api/events/:id', verifyAnyAuth, asyncHandler(async (req, res) => {
-    const id = typeof req.params.id === 'string' ? req.params.id : String(req.params.id);
-    const event = await prisma.event.update({ where: { id }, data: req.body });
+    const event = await prisma.event.update({ where: { id: req.params.id }, data: req.body });
     res.json(event);
 }));
 
 app.delete('/api/events/:id', verifyAnyAuth, asyncHandler(async (req, res) => {
-    const id = typeof req.params.id === 'string' ? req.params.id : String(req.params.id);
-    await prisma.event.delete({ where: { id } });
+    await prisma.event.delete({ where: { id: req.params.id } });
     res.json({ success: true });
 }));
 
@@ -505,14 +501,12 @@ app.post('/api/members', verifyAnyAuth, asyncHandler(async (req, res) => {
 }));
 
 app.put('/api/members/:id', verifyAnyAuth, asyncHandler(async (req, res) => {
-    const id = typeof req.params.id === 'string' ? req.params.id : String(req.params.id);
-    const member = await prisma.member.update({ where: { id }, data: req.body });
+    const member = await prisma.member.update({ where: { id: req.params.id }, data: req.body });
     res.json(member);
 }));
 
 app.delete('/api/members/:id', verifyAnyAuth, asyncHandler(async (req, res) => {
-    const id = typeof req.params.id === 'string' ? req.params.id : String(req.params.id);
-    await prisma.member.delete({ where: { id } });
+    await prisma.member.delete({ where: { id: req.params.id } });
     res.json({ success: true });
 }));
 
@@ -530,18 +524,16 @@ app.post('/api/news', verifyAnyAuth, asyncHandler(async (req, res) => {
 }));
 
 app.put('/api/news/:id', verifyAnyAuth, asyncHandler(async (req, res) => {
-    const id = typeof req.params.id === 'string' ? req.params.id : String(req.params.id);
     const { tags, design, ...rest } = req.body;
     const data: any = { ...rest };
     if (tags !== undefined) data.tags = JSON.stringify(tags);
     if (design !== undefined) data.design = design ? JSON.stringify(design) : null;
-    const news = await prisma.news.update({ where: { id }, data });
+    const news = await prisma.news.update({ where: { id: req.params.id }, data });
     res.json(news);
 }));
 
 app.delete('/api/news/:id', verifyAnyAuth, asyncHandler(async (req, res) => {
-    const id = typeof req.params.id === 'string' ? req.params.id : String(req.params.id);
-    await prisma.news.delete({ where: { id } });
+    await prisma.news.delete({ where: { id: req.params.id } });
     res.json({ success: true });
 }));
 
@@ -552,14 +544,12 @@ app.post('/api/timeline', verifyAnyAuth, asyncHandler(async (req, res) => {
 }));
 
 app.put('/api/timeline/:id', verifyAnyAuth, asyncHandler(async (req, res) => {
-    const id = typeof req.params.id === 'string' ? req.params.id : String(req.params.id);
-    const item = await prisma.timelineItem.update({ where: { id }, data: req.body });
+    const item = await prisma.timelineItem.update({ where: { id: req.params.id }, data: req.body });
     res.json(item);
 }));
 
 app.delete('/api/timeline/:id', verifyAnyAuth, asyncHandler(async (req, res) => {
-    const id = typeof req.params.id === 'string' ? req.params.id : String(req.params.id);
-    await prisma.timelineItem.delete({ where: { id } });
+    await prisma.timelineItem.delete({ where: { id: req.params.id } });
     res.json({ success: true });
 }));
 
@@ -579,7 +569,7 @@ app.put('/api/settings', verifyAnyAuth, asyncHandler(async (req, res) => {
 
 // ─── Access Keys CRUD ───────────────────────────────────────────────
 app.get('/api/dean/access-keys', verifyDeanToken, asyncHandler(async (_req, res) => {
-    const keys = await prisma.accessKey.findMany({ orderBy: { generatedAt: 'desc' } });
+    const keys = await prisma.accessKey.findMany({ orderBy: { createdAt: 'desc' } });
     res.json(keys);
 }));
 
@@ -605,15 +595,14 @@ app.post('/api/dean/access-keys', verifyDeanToken, asyncHandler(async (req, res)
 }));
 
 app.delete('/api/dean/access-keys/:id', verifyDeanToken, asyncHandler(async (req, res) => {
-    const id = typeof req.params.id === 'string' ? req.params.id : String(req.params.id);
-    await prisma.accessKey.delete({ where: { id } });
+    await prisma.accessKey.delete({ where: { id: req.params.id } });
     res.json({ success: true });
 }));
 
 // ─── Sessions Management ────────────────────────────────────────────
 app.get('/api/dean/sessions', verifyDeanToken, asyncHandler(async (_req, res) => {
     const deanSessions = await prisma.deanSession.findMany({ orderBy: { createdAt: 'desc' } });
-    const adminSessions = await prisma.adminSession.findMany({ orderBy: { loginTime: 'desc' } });
+    const adminSessions = await prisma.adminSession.findMany({ orderBy: { createdAt: 'desc' } });
     res.json({ deanSessions, adminSessions });
 }));
 
@@ -691,7 +680,7 @@ app.delete('/api/upload/:filename', verifyAnyAuth, asyncHandler(async (req, res)
 // ═══════════════════════════════════════════════════════════════════
 
 // API 404 Handler (Keep API errors as JSON)
-app.use('/api', (req, res) => {
+app.use('/api/*', (req, res) => {
     res.status(404).json({ error: 'API endpoint not found' });
 });
 
@@ -699,8 +688,7 @@ app.use('/api', (req, res) => {
 const distPath = path.resolve(__dirname, '../../dist');
 if (fs.existsSync(distPath)) {
     app.use(express.static(distPath));
-    // Use RegExp for catch-all to avoid Express 5 string syntax issues
-    app.get(/.*/, (req, res) => {
+    app.get('*', (req, res) => {
         res.sendFile(path.join(distPath, 'index.html'));
     });
 }
