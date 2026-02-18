@@ -4,7 +4,11 @@
  * Regular users need NO login to browse the site.
  */
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const rawBase = import.meta.env.VITE_API_URL || '';
+// If the base ends with /api, strip it to prevent /api/api doubling
+const API_BASE = rawBase.endsWith('/api') ? rawBase.slice(0, -4) : (rawBase || 'http://localhost:3001');
+
+console.log('🌐 API Client initialized with base:', API_BASE);
 
 // ─── Token Storage Helpers ──────────────────────────────────────────
 const DEAN_TOKEN_KEY = 'csa_dean_token';
@@ -20,7 +24,8 @@ export const clearAdminToken = () => localStorage.removeItem(ADMIN_TOKEN_KEY);
 
 // ─── Generic Fetch Wrapper ──────────────────────────────────────────
 async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
-    const res = await fetch(`${API_BASE}${path}`, {
+    const fullUrl = `${API_BASE}${path}`;
+    const res = await fetch(fullUrl, {
         headers: {
             'Content-Type': 'application/json',
             ...options.headers,
