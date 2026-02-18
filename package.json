@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "npx prisma generate && tsc && vite build",
+    "build": "npx prisma generate && tsc -p tsconfig.server.json && vite build",
     "preview": "vite preview",
     "start": "node --loader ts-node/esm --no-warnings server/src/index.ts",
     "server": "node --loader ts-node/esm --no-warnings server/src/index.ts",
