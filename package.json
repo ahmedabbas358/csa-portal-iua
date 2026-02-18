@@ -10,12 +10,12 @@
     "dev": "vite",
     "build": "npx prisma generate && tsc -p tsconfig.server.json && vite build",
     "preview": "vite preview",
-    "prestart": "npx prisma db push --accept-data-loss && npx prisma db seed",
+    "prestart": "sh -c \"DATABASE_URL=${DATABASE_URL:-file:./prisma/dev.db} npx prisma db push --accept-data-loss && DATABASE_URL=${DATABASE_URL:-file:./prisma/dev.db} npx prisma db seed\"",
     "start": "node --loader ts-node/esm --no-warnings server/src/index.ts",
     "server": "node --loader ts-node/esm --no-warnings server/src/index.ts",
-    "db:push": "prisma db push",
-    "db:studio": "prisma studio",
-    "db:seed": "npx prisma db seed"
+    "db:push": "DATABASE_URL=file:./prisma/dev.db npx prisma db push",
+    "db:studio": "DATABASE_URL=file:./prisma/dev.db npx prisma studio",
+    "db:seed": "DATABASE_URL=file:./prisma/dev.db npx prisma db seed"
   },
   "prisma": {
     "seed": "node --loader ts-node/esm prisma/seed.ts"

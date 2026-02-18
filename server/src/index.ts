@@ -23,6 +23,15 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
 const app = express();
 const prisma = new PrismaClient();
 const PORT = process.env.PORT || 3001;
+const DATABASE_URL = process.env.DATABASE_URL || 'file:./prisma/dev.db';
+
+console.log('🛠️ Server Startup Config:');
+console.log(`- PORT: ${PORT}`);
+console.log(`- DATABASE_URL: ${DATABASE_URL ? 'PRESENT (Masked)' : 'MISSING'}`);
+if (process.env.NODE_ENV !== 'production') {
+    console.log(`- RAW DB URL: ${DATABASE_URL}`);
+}
+
 const JWT_SECRET = process.env.JWT_SECRET || 'csa-portal-secret-key-2024-change-in-production';
 const SALT_ROUNDS = 10;
 
