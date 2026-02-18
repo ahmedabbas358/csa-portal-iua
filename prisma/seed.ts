@@ -9,7 +9,7 @@ const SALT_ROUNDS = 10;
 async function main() {
     console.log('🌱 Seeding database...\n');
 
-    // ─── Dean Config (Master Key) ─────────────────────────────────────
+    // Dean Config (Master Key)
     const DEAN_MASTER_KEY = 'CSA_MASTER_KEY_2024_AFRICA_UNI_SECURE_ACCESS_V1_X99_AB7_KL2';
     const hashedKey = await bcrypt.hash(DEAN_MASTER_KEY, SALT_ROUNDS);
 
@@ -28,7 +28,7 @@ async function main() {
     console.log(`   🔑 Dean Master Key: ${DEAN_MASTER_KEY}`);
     console.log('   📌 Access keys are generated from the Dean Dashboard\n');
 
-    // ─── App Settings ─────────────────────────────────────────────────
+    // App Settings
     await prisma.appSetting.upsert({
         where: { id: 'main' },
         update: {},
@@ -53,7 +53,7 @@ async function main() {
     });
     console.log('✅ App settings seeded');
 
-    // ─── Events ───────────────────────────────────────────────────────
+    // Events
     await prisma.event.deleteMany({});
     await prisma.event.createMany({
         data: [
@@ -79,7 +79,7 @@ async function main() {
     });
     console.log('✅ Events seeded');
 
-    // ─── Members ──────────────────────────────────────────────────────
+    // Members
     await prisma.member.deleteMany({});
     await prisma.member.createMany({
         data: [
@@ -99,7 +99,7 @@ async function main() {
     });
     console.log('✅ Members seeded');
 
-    // ─── News ─────────────────────────────────────────────────────────
+    // News
     await prisma.news.deleteMany({});
     await prisma.news.createMany({
         data: [
@@ -135,7 +135,7 @@ async function main() {
     });
     console.log('✅ News seeded');
 
-    // ─── Timeline ─────────────────────────────────────────────────────
+    // Timeline
     await prisma.timelineItem.deleteMany({});
     await prisma.timelineItem.createMany({
         data: [
@@ -147,7 +147,7 @@ async function main() {
     });
     console.log('✅ Timeline seeded');
 
-    // ─── Clear old sessions & access keys ─────────────────────────────
+    // Clear old sessions & access keys
     await prisma.accessKey.deleteMany({});
     await prisma.deanSession.deleteMany({});
     await prisma.adminSession.deleteMany({});

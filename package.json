@@ -8,14 +8,14 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "npx prisma generate --schema=server/prisma/schema.prisma && vite build",
+    "build": "npx prisma generate && vite build",
     "preview": "vite preview",
     "start": "ts-node --esm server/src/index.ts",
     "server": "ts-node --esm server/src/index.ts",
-    "db:generate": "prisma generate --schema=server/prisma/schema.prisma",
-    "db:push": "prisma db push --schema=server/prisma/schema.prisma",
-    "db:studio": "prisma studio --schema=server/prisma/schema.prisma",
-    "db:seed": "npx ts-node server/prisma/seed.ts"
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio",
+    "db:seed": "ts-node prisma/seed.ts"
   },
   "dependencies": {
     "@google/genai": "^1.41.0",
