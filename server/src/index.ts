@@ -184,7 +184,7 @@ app.post('/api/auth/dean/login', asyncHandler(async (req, res) => {
         return res.status(500).json({ error: 'System not initialized' });
     }
 
-    const isValid = await bcrypt.compare(masterKey, config.masterKey);
+    const isValid = await bcrypt.compare(masterKey.trim(), config.masterKey);
     if (!isValid) {
         return res.status(401).json({ error: 'Invalid master key' });
     }
