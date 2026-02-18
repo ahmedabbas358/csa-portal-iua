@@ -4,6 +4,9 @@ FROM node:20-slim
 # Set working directory
 WORKDIR /app
 
+# Install system dependencies (OpenSSL is required for Prisma)
+RUN apt-get update -y && apt-get install -y openssl
+
 # Install dependencies (only production and dev needed for build)
 COPY package*.json ./
 RUN npm ci
