@@ -23,9 +23,12 @@
     "esModuleInterop": true
   },
   "include": [
-    "src",
     "server",
     "prisma"
   ],
-  "references": []
+  "exclude": [
+    "src",
+    "dist",
+    "node_modules"
+  ]
 }

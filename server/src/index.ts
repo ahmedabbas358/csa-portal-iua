@@ -683,13 +683,13 @@ app.use('/api', (req, res) => {
 });
 
 // Serve Static Frontend
-const distPath = path.resolve(__dirname, '../../dist');
-if (fs.existsSync(distPath)) {
-    app.use(express.static(distPath));
-    app.get('(.*)', (req, res) => {
-        res.sendFile(path.join(distPath, 'index.html'));
-    });
-}
+// const distPath = path.resolve(__dirname, '../../dist');
+// if (fs.existsSync(distPath)) {
+//     app.use(express.static(distPath));
+//     app.get('(.*)', (req, res) => {
+//         res.sendFile(path.join(distPath, 'index.html'));
+//     });
+// }
 
 // ═══════════════════════════════════════════════════════════════════
 // GLOBAL ERROR HANDLER
