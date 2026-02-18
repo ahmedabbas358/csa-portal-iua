@@ -7,7 +7,8 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ─── Core Content Models ───────────────────────────────────────────
+// Core Content Models
+
 
 model Event {
   id            String   @id @default(uuid())
@@ -89,7 +90,8 @@ model AppSetting {
   iconStyle         String?
 }
 
-// ─── Security & Auth Models ────────────────────────────────────────
+// Security & Auth Models
+
 
 model DeanConfig {
   id               String   @id @default("config")

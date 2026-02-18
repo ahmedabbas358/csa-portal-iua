@@ -7,7 +7,7 @@ WORKDIR /app
 # Install system dependencies (OpenSSL is required for Prisma)
 RUN apt-get update -y && apt-get install -y openssl
 
-# Install dependencies (only production and dev needed for build)
+# Install dependencies
 COPY package*.json ./
 RUN npm ci
 
@@ -23,5 +23,5 @@ RUN npm run build
 # Expose port
 EXPOSE 3001
 
-# Start the server (which serves frontend too)
+# Start the server
 CMD ["npm", "start"]
