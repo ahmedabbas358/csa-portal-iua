@@ -8,10 +8,10 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "npx prisma generate && vite build",
+    "build": "npx prisma generate && tsc && vite build",
     "preview": "vite preview",
-    "start": "ts-node --esm server/src/index.ts",
-    "db:generate": "prisma generate",
+    "start": "node --loader ts-node/esm --no-warnings server/src/index.ts",
+    "server": "node --loader ts-node/esm --no-warnings server/src/index.ts",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
     "db:seed": "ts-node prisma/seed.ts"
