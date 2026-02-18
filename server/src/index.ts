@@ -9,7 +9,9 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import dotenv from 'dotenv';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
+import multer from 'multer';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -26,9 +28,38 @@ const SALT_ROUNDS = 10;
 
 // ─── Middleware ─────────────────────────────────────────────────────
 app.use(cors());
-app.use(helmet({ contentSecurityPolicy: false }));
+app.use(helmet({ contentSecurityPolicy: false, crossOriginResourcePolicy: false }));
 app.use(morgan('dev'));
 app.use(express.json({ limit: '10mb' }));
+
+// ─── File Upload Setup ──────────────────────────────────────────────
+const uploadsDir = path.resolve(__dirname, '../uploads');
+if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+
+// Serve uploaded files statically
+app.use('/uploads', express.static(uploadsDir));
+
+const storage = multer.diskStorage({
+    destination: (_req, _file, cb) => cb(null, uploadsDir),
+    filename: (_req, file, cb) => {
+        const ext = path.extname(file.originalname) || '.jpg';
+        const uniqueName = `${Date.now()}-${crypto.randomBytes(6).toString('hex')}${ext}`;
+        cb(null, uniqueName);
+    }
+});
+
+const upload = multer({
+    storage,
+    limits: { fileSize: 50 * 1024 * 1024 }, // 50MB max
+    fileFilter: (_req, file, cb) => {
+        const allowed = /\.(jpg|jpeg|png|gif|webp|svg|mp4|mov|webm)$/i;
+        if (allowed.test(path.extname(file.originalname))) {
+            cb(null, true);
+        } else {
+            cb(new Error('Unsupported file type'));
+        }
+    }
+});
 
 // Error wrapper
 const asyncHandler = (fn: (req: Request, res: Response, next: NextFunction) => Promise<any>) =>
@@ -613,6 +644,35 @@ app.put('/api/dean/config', verifyDeanToken, asyncHandler(async (req, res) => {
         data: updateData,
     });
     res.json({ success: true, lastChanged: config.updatedAt });
+}));
+
+// ═══════════════════════════════════════════════════════════════════
+// FILE UPLOAD ENDPOINT
+// ═══════════════════════════════════════════════════════════════════
+
+app.post('/api/upload', verifyAnyAuth, upload.single('file'), (req: Request, res: Response) => {
+    if (!req.file) {
+        return res.status(400).json({ error: 'No file provided' });
+    }
+    // Build public URL
+    const protocol = req.protocol;
+    const host = req.get('host') || 'localhost:3001';
+    const url = `${protocol}://${host}/uploads/${req.file.filename}`;
+    res.json({
+        url,
+        filename: req.file.filename,
+        size: req.file.size,
+        mimetype: req.file.mimetype,
+    });
+});
+
+// Delete uploaded file
+app.delete('/api/upload/:filename', verifyAnyAuth, asyncHandler(async (req, res) => {
+    const filePath = path.join(uploadsDir, String(req.params.filename));
+    if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+    }
+    res.json({ success: true });
 }));
 
 // ═══════════════════════════════════════════════════════════════════

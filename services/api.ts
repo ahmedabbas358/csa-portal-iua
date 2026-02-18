@@ -223,6 +223,23 @@ export const api = {
         deleteTimeline: function (id: string) { return apiFetch<any>(`/api/timeline/${id}`, { method: 'DELETE', headers: authHeaders(this._getToken()) }); },
 
         updateSettings: function (data: any) { return apiFetch<any>('/api/settings', { method: 'PUT', headers: authHeaders(this._getToken()), body: JSON.stringify(data) }); },
+
+        // File upload (uses FormData, not JSON)
+        uploadFile: async function (file: File): Promise<{ url: string; filename: string }> {
+            const formData = new FormData();
+            formData.append('file', file);
+            const token = this._getToken();
+            const res = await fetch(`${API_BASE}/api/upload`, {
+                method: 'POST',
+                headers: token ? { Authorization: `Bearer ${token}` } : {},
+                body: formData,
+            });
+            if (!res.ok) {
+                const body = await res.json().catch(() => ({ error: res.statusText }));
+                throw new Error(body.error || `Upload failed (${res.status})`);
+            }
+            return res.json();
+        },
     },
 };
 

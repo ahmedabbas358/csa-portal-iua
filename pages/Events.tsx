@@ -470,19 +470,19 @@ const Events: React.FC<EventsProps> = ({ lang, events }) => {
                             <X size={20} />
                         </button>
 
-                        <div className="relative h-[350px] md:h-[450px]">
+                        <div className="relative h-64 md:h-[450px]">
                             <img src={selectedEvent.image || `https://picsum.photos/800/600`} className="w-full h-full object-cover" onClick={() => setViewingImage(selectedEvent.image || '')} />
                             <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent"></div>
-                            <div className="absolute bottom-0 left-0 p-8 md:p-12 text-white w-full">
+                            <div className="absolute bottom-0 left-0 p-6 md:p-12 text-white w-full">
                                 <div className="flex items-center gap-3 mb-4">
                                     <span className="px-3 py-1 bg-brand-600 rounded-lg text-sm font-bold shadow-sm">{selectedEvent.type}</span>
                                     {selectedEvent.isOnline && <span className="px-3 py-1 bg-red-600 rounded-lg text-sm font-bold shadow-sm flex items-center gap-2"><Wifi size={14} /> Online Event</span>}
                                 </div>
-                                <h2 className="text-3xl md:text-5xl font-black leading-tight">{lang === 'ar' ? selectedEvent.titleAr : selectedEvent.title}</h2>
+                                <h2 className="text-2xl md:text-5xl font-black leading-tight">{lang === 'ar' ? selectedEvent.titleAr : selectedEvent.title}</h2>
                             </div>
                         </div>
 
-                        <div className="p-8 md:p-12 grid grid-cols-1 lg:grid-cols-3 gap-12">
+                        <div className="p-6 md:p-12 grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-12">
                             <div className="lg:col-span-2 space-y-8">
                                 <div>
                                     <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">

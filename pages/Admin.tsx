@@ -56,17 +56,17 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
 }) => {
     const [tab, setTab] = useState<'upload' | 'link'>('upload');
     const [error, setError] = useState('');
+    const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const [isDragging, setIsDragging] = useState(false);
     const [lastPos, setLastPos] = useState({ x: 0, y: 0 });
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            // High limit for high quality uploads
-            if (file.size > 500 * 1024 * 1024) {
-                setError('File size exceeds 500MB limit.');
+            if (file.size > 50 * 1024 * 1024) {
+                setError('File size exceeds 50MB limit.');
                 return;
             }
             setError('');
@@ -76,9 +76,19 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
                 onMediaTypeChange?.('image');
             }
 
-            // CRITICAL FIX: Use Blob URL instead of Base64 to prevent color shift and quality loss
-            const objectUrl = URL.createObjectURL(file);
-            onChange(objectUrl);
+            // Upload to server for permanent storage
+            setIsUploading(true);
+            try {
+                const result = await api.manage.uploadFile(file);
+                onChange(result.url);
+            } catch (err: any) {
+                setError('Upload failed: ' + (err.message || 'Unknown error'));
+                // Fallback to blob URL for preview
+                const objectUrl = URL.createObjectURL(file);
+                onChange(objectUrl);
+            } finally {
+                setIsUploading(false);
+            }
         }
     };
 
@@ -153,10 +163,14 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
                         <button onClick={() => { setTab('link'); setError(''); }} className={`px-4 py-1.5 rounded-md text-xs font-bold transition-colors ${tab === 'link' ? 'bg-brand-100 text-brand-700 dark:bg-brand-900/40 dark:text-brand-300 shadow-sm' : 'text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-slate-800'}`}>Link</button>
                     </div>
                     {tab === 'upload' ? (
-                        <div className="text-center py-2 cursor-pointer" onClick={() => fileInputRef.current?.click()}>
-                            <div className="w-16 h-16 bg-blue-50 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4 text-brand-500 group-hover:scale-110 transition-transform"><Upload size={24} /></div>
-                            <p className="text-base font-bold text-gray-700 dark:text-gray-200">Tap to upload media</p>
-                            <p className="text-xs text-gray-400 mt-1">Images or Videos (Raw Quality)</p>
+                        <div className="text-center py-2 cursor-pointer" onClick={() => !isUploading && fileInputRef.current?.click()}>
+                            <div className="w-16 h-16 bg-blue-50 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4 text-brand-500 group-hover:scale-110 transition-transform">
+                                {isUploading ? <Loader2 size={24} className="animate-spin" /> : <Upload size={24} />}
+                            </div>
+                            <p className="text-base font-bold text-gray-700 dark:text-gray-200">
+                                {isUploading ? 'Uploading...' : 'Tap to upload media'}
+                            </p>
+                            <p className="text-xs text-gray-400 mt-1">{isUploading ? 'Please wait' : 'Images or Videos (Max 50MB)'}</p>
                             {error && <p className="text-xs text-red-500 font-bold mt-2">{error}</p>}
                             <input ref={fileInputRef} type="file" accept="image/*,video/*" className="hidden" onChange={handleFileChange} />
                         </div>

@@ -26,3 +26,4 @@ dist-ssr
 .env
 *.db
 node_modules/
+server/uploads/
