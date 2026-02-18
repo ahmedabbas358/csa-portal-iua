@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import About from './pages/About';
@@ -8,33 +8,43 @@ import Team from './pages/Team';
 import Contact from './pages/Contact';
 import Admin from './pages/Admin';
 import DeanDashboard from './pages/DeanDashboard';
-import { Language, AppState, AccessKey, ActiveSession, DeanSecurityConfig } from './types';
+import { Language, AppSettings, EventItem, Member, NewsPost, TimelineItem, AccessKey, ActiveSession, DeanSecurityConfig } from './types';
 import { INITIAL_STATE, DEAN_MASTER_KEY } from './constants';
 import { Lock, ShieldCheck, AlertCircle, ScanLine, X, QrCode, KeyRound, HelpCircle, RefreshCw } from 'lucide-react';
 import Footer from './components/Footer';
 import { BackgroundPattern } from './types';
 
 import { getPatternStyle as getEnginePattern, getIconStyleCSS } from './utils/styleEngine';
+import { api, getDeanToken, getAdminToken, clearDeanToken, clearAdminToken } from './services/api';
 
 // --- PATTERN HELPER ---
-const getPatternStyle = (pattern?: string, isDark?: boolean): React.CSSProperties => { // Changed type to string
-    // Use the robust engine for 128+ patterns
-    // Fallback color logic handled inside engine or passed here
+const getPatternStyle = (pattern?: string, isDark?: boolean): React.CSSProperties => {
     const color = isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)';
     return getEnginePattern(pattern || 'none', color, isDark || false);
 };
 
 const App: React.FC = () => {
-    // State for content
-    const [events, setEvents] = useState(INITIAL_STATE.events);
-    const [members, setMembers] = useState(INITIAL_STATE.members);
-    const [news, setNews] = useState(INITIAL_STATE.news);
-    const [settings, setSettings] = useState(INITIAL_STATE.settings);
-    const [timeline, setTimeline] = useState(INITIAL_STATE.timeline);
+    // ─── Content State (loaded from API) ────────────────────────────
+    const [events, setEvents] = useState<EventItem[]>(INITIAL_STATE.events);
+    const [members, setMembers] = useState<Member[]>(INITIAL_STATE.members);
+    const [news, setNews] = useState<NewsPost[]>(INITIAL_STATE.news);
+    const [settings, setSettings] = useState<AppSettings>(INITIAL_STATE.settings);
+    const [timeline, setTimeline] = useState<TimelineItem[]>(INITIAL_STATE.timeline);
+    const [dataLoaded, setDataLoaded] = useState(false);
 
-    // Security State
-    const [accessKeys, setAccessKeys] = useState<AccessKey[]>([]);
-    const [sessions, setSessions] = useState<ActiveSession[]>([]);
+    // ─── Security State (kept for Admin panel compatibility) ────────
+    const [accessKeys, setAccessKeys] = useState<AccessKey[]>(() => {
+        try {
+            const stored = localStorage.getItem('csa_access_keys');
+            return stored ? JSON.parse(stored) : [];
+        } catch { return []; }
+    });
+    const [sessions, setSessions] = useState<ActiveSession[]>(() => {
+        try {
+            const stored = localStorage.getItem('csa_sessions');
+            return stored ? JSON.parse(stored) : [];
+        } catch { return []; }
+    });
     const [deanConfig, setDeanConfig] = useState<DeanSecurityConfig>({
         masterKey: DEAN_MASTER_KEY,
         securityQuestion: 'What is the default year?',
@@ -43,60 +53,150 @@ const App: React.FC = () => {
         lastChanged: new Date().toISOString()
     });
 
-    // UI State
+    // ─── UI State ───────────────────────────────────────────────────
     const [lang, setLang] = useState<Language>('ar');
     const [currentPage, setCurrentPage] = useState('home');
     const [isDarkMode, setIsDarkMode] = useState(false);
 
-    // Auth State
-    const [isLoggedIn, setIsLoggedIn] = useState(false); // Regular Admin
-    const [isDeanLoggedIn, setIsDeanLoggedIn] = useState(false); // Dean
+    // ─── Auth State ─────────────────────────────────────────────────
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [isDeanLoggedIn, setIsDeanLoggedIn] = useState(false);
     const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+    const [authChecked, setAuthChecked] = useState(false);
 
-    // Login Inputs
-    const [loginInput, setLoginInput] = useState(''); // Used for both password and Token
+    // ─── Login Inputs ───────────────────────────────────────────────
+    const [loginInput, setLoginInput] = useState('');
     const [loginError, setLoginError] = useState('');
     const [isScanning, setIsScanning] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
-    // Recovery Mode State
+    // ─── Recovery Mode State ────────────────────────────────────────
     const [recoveryMode, setRecoveryMode] = useState<'none' | 'question' | 'backup' | 'reset'>('none');
     const [recoveryInput, setRecoveryInput] = useState('');
+    const [resetToken, setResetToken] = useState('');
+    const [securityQuestion, setSecurityQuestion] = useState('');
 
-    // --- INITIALIZATION ---
-    useEffect(() => {
-        // Load Dean Config
-        const storedConfig = localStorage.getItem('csa_dean_config');
-        if (storedConfig) {
-            try {
-                setDeanConfig(JSON.parse(storedConfig));
-            } catch (e) {
-                console.error("Failed to parse dean config");
-            }
-        }
+    // ═══════════════════════════════════════════════════════════════
+    // DATA LOADING FROM API
+    // ═══════════════════════════════════════════════════════════════
 
-        // Load App Settings (Theme, etc.)
-        const storedSettings = localStorage.getItem('csa_app_settings');
-        if (storedSettings) {
-            try {
-                setSettings(JSON.parse(storedSettings));
-            } catch (e) {
-                console.error("Failed to parse app settings");
+    const loadDataFromAPI = useCallback(async () => {
+        try {
+            const [eventsData, membersData, newsData, timelineData, settingsData] = await Promise.allSettled([
+                api.getEvents(),
+                api.getMembers(),
+                api.getNews(),
+                api.getTimeline(),
+                api.getSettings(),
+            ]);
+
+            if (eventsData.status === 'fulfilled' && eventsData.value?.length > 0) setEvents(eventsData.value);
+            if (membersData.status === 'fulfilled' && membersData.value?.length > 0) setMembers(membersData.value);
+            if (newsData.status === 'fulfilled' && newsData.value?.length > 0) setNews(newsData.value);
+            if (timelineData.status === 'fulfilled' && timelineData.value?.length > 0) setTimeline(timelineData.value);
+            if (settingsData.status === 'fulfilled' && settingsData.value) {
+                setSettings(prev => ({ ...prev, ...settingsData.value }));
             }
+            setDataLoaded(true);
+        } catch (e) {
+            console.warn('API unavailable, using fallback data:', e);
+            setDataLoaded(true);
         }
     }, []);
 
-    // Persist Settings
+    // ═══════════════════════════════════════════════════════════════
+    // INITIALIZATION — Check sessions + load data
+    // ═══════════════════════════════════════════════════════════════
+
+    useEffect(() => {
+        const init = async () => {
+            // 1. Load data from API (falls back to INITIAL_STATE constants)
+            await loadDataFromAPI();
+
+            // 2. Check if Dean has a saved session (persistent device recognition)
+            const deanToken = getDeanToken();
+            if (deanToken) {
+                try {
+                    const isValid = await api.deanVerify();
+                    if (isValid) {
+                        setIsDeanLoggedIn(true);
+                    } else {
+                        clearDeanToken();
+                    }
+                } catch {
+                    // API might be down, keep token for later
+                    console.warn('Could not verify Dean session, keeping token.');
+                }
+            }
+
+            // 3. Check if Admin has a saved session
+            const adminToken = getAdminToken();
+            if (adminToken) {
+                try {
+                    const result = await api.adminVerify();
+                    if (result.valid) {
+                        setIsLoggedIn(true);
+                    } else {
+                        clearAdminToken();
+                    }
+                } catch {
+                    console.warn('Could not verify Admin session, keeping token.');
+                }
+            }
+
+            setAuthChecked(true);
+        };
+
+        init();
+
+        // Load App Settings from localStorage (for theme persistence even offline)
+        const storedSettings = localStorage.getItem('csa_app_settings');
+        if (storedSettings) {
+            try { setSettings(prev => ({ ...prev, ...JSON.parse(storedSettings) })); } catch { }
+        }
+    }, [loadDataFromAPI]);
+
+    // ═══════════════════════════════════════════════════════════════
+    // HISTORY / BACK BUTTON HANDLING
+    // ═══════════════════════════════════════════════════════════════
+
+    useEffect(() => {
+        const handlePopState = (event: PopStateEvent) => {
+            if (event.state && event.state.page) {
+                setCurrentPage(event.state.page);
+            } else if (!event.state || !event.state.modal) {
+                // Only set home if it's not a modal state (Events modal handles its own)
+                setCurrentPage('home');
+            }
+        };
+
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, []);
+
+    // Sync Page with History
+    useEffect(() => {
+        const currentState = window.history.state;
+        if (!currentState || currentState.page !== currentPage) {
+            window.history.pushState({ page: currentPage }, '', `?page=${currentPage}`);
+        }
+    }, [currentPage]);
+
+    // Persist Settings (locally for offline theme)
     useEffect(() => {
         localStorage.setItem('csa_app_settings', JSON.stringify(settings));
     }, [settings]);
 
-    // Update Dean Config Wrapper (to persist to localStorage)
+    // Persist Auth Data (backward compat)
+    useEffect(() => localStorage.setItem('csa_access_keys', JSON.stringify(accessKeys)), [accessKeys]);
+    useEffect(() => localStorage.setItem('csa_sessions', JSON.stringify(sessions)), [sessions]);
+
     const updateDeanConfig = (newConfig: DeanSecurityConfig) => {
         setDeanConfig(newConfig);
         localStorage.setItem('csa_dean_config', JSON.stringify(newConfig));
     };
 
-    // Scroll to top
+    // Scroll to top on page change
     useEffect(() => {
         window.scrollTo(0, 0);
         setLoginError('');
@@ -106,34 +206,32 @@ const App: React.FC = () => {
         setRecoveryInput('');
     }, [currentPage]);
 
-    // CONTRAST ALGORITHM & THEME APPLICATION
+    // ═══════════════════════════════════════════════════════════════
+    // THEME APPLICATION (unchanged logic)
+    // ═══════════════════════════════════════════════════════════════
+
     useEffect(() => {
         const root = document.documentElement;
 
-        // 1. Apply Dark Mode Class
         if (isDarkMode) {
             root.classList.add('dark');
-            document.body.style.backgroundColor = '#0f172a'; // Slate 900
+            document.body.style.backgroundColor = '#0f172a';
         } else {
             root.classList.remove('dark');
-            document.body.style.backgroundColor = '#f8fafc'; // Slate 50
+            document.body.style.backgroundColor = '#f8fafc';
         }
 
-        // 2. Set Theme Variables
         root.style.setProperty('--primary-color', settings.primaryColor);
         root.style.setProperty('--secondary-color', settings.secondaryColor);
 
-        // 3. Contrast Algorithm
         const hex = settings.primaryColor.replace('#', '');
         const r = parseInt(hex.substr(0, 2), 16);
         const g = parseInt(hex.substr(2, 2), 16);
         const b = parseInt(hex.substr(4, 2), 16);
         const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
         const contrastColor = yiq >= 128 ? '#0f172a' : '#ffffff';
-
         root.style.setProperty('--primary-contrast', contrastColor);
 
-        // 4. Update Tailwind Colors Helper
         const hexToRgb = (hexVal: string) => {
             const rr = parseInt(hexVal.slice(1, 3), 16);
             const gg = parseInt(hexVal.slice(3, 5), 16);
@@ -152,30 +250,16 @@ const App: React.FC = () => {
             root.style.setProperty('--brand-900', rgb);
         }
 
-        // 5. Border Radius & Interface Geometry
-        // Handle basic radius, but also complex styles
         const radiusMap: Record<string, string> = {
-            'none': '0px',
-            'sm': '0.25rem',
-            'md': '0.5rem',
-            'lg': '0.75rem',
-            'xl': '1rem',
-            '2xl': '1.5rem',
-            'glass': '1rem', // Glass uses large radius
-            'prominent': '0.5rem' // Prominent uses medium radius
+            'none': '0px', 'sm': '0.25rem', 'md': '0.5rem', 'lg': '0.75rem',
+            'xl': '1rem', '2xl': '1.5rem', 'glass': '1rem', 'prominent': '0.5rem'
         };
         const currentRadius = settings.borderRadius || 'xl';
         root.style.setProperty('--radius-base', radiusMap[currentRadius]);
 
-        // 6. Animation Speed
-        const speedMap = {
-            'slow': '500ms',
-            'normal': '300ms',
-            'fast': '150ms'
-        };
+        const speedMap = { 'slow': '500ms', 'normal': '300ms', 'fast': '150ms' };
         root.style.setProperty('--transition-speed', speedMap[settings.animationSpeed || 'normal']);
 
-        // 7. Font Family
         const fontMap = {
             'sans': 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
             'serif': 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif',
@@ -185,7 +269,6 @@ const App: React.FC = () => {
         };
         root.style.setProperty('--font-primary', fontMap[settings.fontStyle || 'sans']);
 
-        // Inject Dynamic Styles for Radius, Transition, Glass, & Prominent Overrides
         const styleId = 'dynamic-theme-styles';
         let styleTag = document.getElementById(styleId);
         if (!styleTag) {
@@ -220,7 +303,6 @@ const App: React.FC = () => {
             `;
         }
 
-        // 8. Icon Styles
         const iconCSS = getIconStyleCSS(settings.iconStyle);
 
         styleTag.innerHTML = `
@@ -247,7 +329,6 @@ const App: React.FC = () => {
             ${extraCSS}
         `;
 
-        // Inject Fonts
         if (settings.fontStyle === 'cairo' || settings.fontStyle === 'inter' || !settings.fontStyle) {
             const fontLinkId = 'dynamic-fonts';
             if (!document.getElementById(fontLinkId)) {
@@ -261,89 +342,94 @@ const App: React.FC = () => {
 
     }, [settings, isDarkMode]);
 
-    // --- AUTHENTICATION LOGIC ---
+    // ═══════════════════════════════════════════════════════════════
+    // AUTHENTICATION LOGIC (API-backed)
+    // ═══════════════════════════════════════════════════════════════
 
-    const handleDeanLogin = (e: React.FormEvent) => {
+    const handleDeanLogin = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Check against Dynamic Dean Config
-        if (loginInput === deanConfig.masterKey) {
+        setIsLoading(true);
+        setLoginError('');
+
+        try {
+            await api.deanLogin(loginInput);
             setIsDeanLoggedIn(true);
             setCurrentPage('dean-dashboard');
-            setLoginError('');
-        } else {
-            setLoginError(lang === 'ar' ? 'مفتاح العميد غير صحيح.' : 'Invalid Master Key.');
+        } catch (err: any) {
+            setLoginError(lang === 'ar' ? 'مفتاح العميد غير صحيح.' : (err.message || 'Invalid Master Key.'));
+        } finally {
+            setIsLoading(false);
         }
     };
 
-    const handleRecoverySubmit = (e: React.FormEvent) => {
+    const handleRecoverySubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (recoveryMode === 'question') {
-            if (recoveryInput.trim().toLowerCase() === deanConfig.securityAnswer.trim().toLowerCase()) {
-                setRecoveryMode('reset');
-                setLoginError('');
-            } else {
-                setLoginError(lang === 'ar' ? 'إجابة خاطئة' : 'Incorrect Answer');
+        setIsLoading(true);
+        setLoginError('');
+
+        try {
+            if (recoveryMode === 'question') {
+                const result = await api.verifySecurityAnswer(recoveryInput);
+                if (result.success) {
+                    setResetToken(result.resetToken);
+                    setRecoveryMode('reset');
+                }
+            } else if (recoveryMode === 'backup') {
+                const result = await api.verifyBackupCode(recoveryInput);
+                if (result.success) {
+                    setResetToken(result.resetToken);
+                    setRecoveryMode('reset');
+                }
+            } else if (recoveryMode === 'reset') {
+                if (recoveryInput.length < 8) {
+                    setLoginError(lang === 'ar' ? 'الرمز قصير جداً' : 'Key too short');
+                    setIsLoading(false);
+                    return;
+                }
+                await api.resetMasterKey(resetToken, recoveryInput);
+                alert(lang === 'ar' ? 'تم تغيير الرمز بنجاح! قم بتسجيل الدخول الآن.' : 'Key changed successfully! Login now.');
+                setRecoveryMode('none');
+                setLoginInput('');
+                setRecoveryInput('');
             }
-        } else if (recoveryMode === 'backup') {
-            if (recoveryInput.trim() === deanConfig.backupCode) {
-                setRecoveryMode('reset');
-                setLoginError('');
-            } else {
-                setLoginError(lang === 'ar' ? 'رمز احتياطي غير صحيح' : 'Invalid Backup Code');
-            }
-        } else if (recoveryMode === 'reset') {
-            // Setting new key
-            if (recoveryInput.length < 8) {
-                setLoginError(lang === 'ar' ? 'الرمز قصير جداً' : 'Key too short');
-                return;
-            }
-            updateDeanConfig({ ...deanConfig, masterKey: recoveryInput });
-            alert(lang === 'ar' ? 'تم تغيير الرمز بنجاح! قم بتسجيل الدخول الآن.' : 'Key changed successfully! Login now.');
-            setRecoveryMode('none');
-            setLoginInput('');
-            setRecoveryInput('');
+        } catch (err: any) {
+            setLoginError(err.message || (lang === 'ar' ? 'حدث خطأ' : 'An error occurred'));
+        } finally {
+            setIsLoading(false);
         }
     };
 
-    const handleAdminLogin = (e: React.FormEvent) => {
+    const handleAdminLogin = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsLoading(true);
+        setLoginError('');
 
-        const validKeyIndex = accessKeys.findIndex(k => k.token === loginInput && !k.isUsed);
-        const validKey = accessKeys[validKeyIndex];
-
-        if (validKey) {
-            const updatedKeys = [...accessKeys];
-            updatedKeys[validKeyIndex] = { ...validKey, isUsed: true };
-            setAccessKeys(updatedKeys);
-
-            const newSessionId = `sess-${Date.now()}`;
-            const newSession: ActiveSession = {
-                sessionId: newSessionId,
-                tokenUsed: validKey.token,
-                role: validKey.role,
-                deviceInfo: navigator.userAgent,
-                ipAddress: '192.168.1.x',
-                loginTime: new Date().toLocaleString(),
-                isActive: true
-            };
-            setSessions([newSession, ...sessions]);
-            setCurrentSessionId(newSessionId);
-
+        try {
+            // Try admin login first
+            const result = await api.adminLogin(loginInput);
             setIsLoggedIn(true);
             setCurrentPage('admin');
-            setLoginError('');
-        } else {
-            if (loginInput === 'admin123') {
-                setLoginError(lang === 'ar' ? 'تم تعطيل الدخول بكلمة المرور القديمة.' : 'Legacy login disabled.');
-            } else {
-                setLoginError(lang === 'ar' ? 'مفتاح الدخول غير صالح.' : 'Invalid access token.');
+        } catch (adminErr: any) {
+            // If admin login fails, try Dean login as fallback
+            try {
+                await api.deanLogin(loginInput);
+                setIsDeanLoggedIn(true);
+                setCurrentPage('dean-dashboard');
+            } catch (deanErr: any) {
+                // Both failed
+                setLoginError(lang === 'ar' ? 'مفتاح الدخول غير صالح. تأكد من صحة الرمز.' : 'Invalid key. Please check your credentials.');
             }
+        } finally {
+            setIsLoading(false);
         }
     };
 
-    const handleLogout = () => {
-        if (isLoggedIn && currentSessionId) {
-            setSessions(sessions.map(s => s.sessionId === currentSessionId ? { ...s, isActive: false } : s));
+    const handleLogout = async () => {
+        if (isDeanLoggedIn) {
+            await api.deanLogout();
+        }
+        if (isLoggedIn) {
+            await api.adminLogout();
         }
         setIsLoggedIn(false);
         setIsDeanLoggedIn(false);
@@ -351,16 +437,22 @@ const App: React.FC = () => {
         setCurrentSessionId(null);
     };
 
-    useEffect(() => {
-        if (isLoggedIn && currentSessionId) {
-            const session = sessions.find(s => s.sessionId === currentSessionId);
-            if (!session || !session.isActive) {
-                alert(lang === 'ar' ? 'تم إنهاء جلستك من قبل العميد.' : 'Your session was revoked by the Dean.');
-                handleLogout();
+    // Start recovery flow
+    const startRecovery = async (mode: 'question' | 'backup') => {
+        setRecoveryMode(mode);
+        setLoginError('');
+        setRecoveryInput('');
+        if (mode === 'question') {
+            try {
+                const result = await api.getSecurityQuestion();
+                setSecurityQuestion(result.question);
+            } catch {
+                setSecurityQuestion(lang === 'ar' ? 'سؤال الأمان' : 'Security Question');
             }
         }
-    }, [sessions, isLoggedIn, currentSessionId]);
+    };
 
+    // QR Scanner
     useEffect(() => {
         let html5QrcodeScanner: any;
         if (isScanning && (window as any).Html5QrcodeScanner) {
@@ -472,8 +564,8 @@ const App: React.FC = () => {
                                             {loginError}
                                         </div>
                                     )}
-                                    <button type="submit" className="w-full font-bold py-3.5 rounded-xl hover:shadow-lg hover:-translate-y-0.5 transition-all" style={{ backgroundColor: settings.primaryColor, color: 'var(--primary-contrast)' }}>
-                                        {lang === 'ar' ? 'دخول النظام' : 'Access System'}
+                                    <button type="submit" disabled={isLoading} className="w-full font-bold py-3.5 rounded-xl hover:shadow-lg hover:-translate-y-0.5 transition-all disabled:opacity-60" style={{ backgroundColor: settings.primaryColor, color: 'var(--primary-contrast)' }}>
+                                        {isLoading ? (lang === 'ar' ? 'جاري التحقق...' : 'Verifying...') : (lang === 'ar' ? 'دخول النظام' : 'Access System')}
                                     </button>
 
                                     <button type="button" onClick={() => setIsScanning(true)} className="w-full font-bold py-3.5 rounded-xl border border-gray-300 dark:border-slate-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-all flex items-center justify-center gap-2">
@@ -535,13 +627,13 @@ const App: React.FC = () => {
                                                 {loginError}
                                             </p>
                                         )}
-                                        <button type="submit" className="w-full text-slate-900 font-bold py-4 rounded-xl hover:bg-amber-400 transition-colors bg-amber-500">
-                                            {lang === 'ar' ? 'المصادقة والدخول' : 'Authenticate & Enter'}
+                                        <button type="submit" disabled={isLoading} className="w-full text-slate-900 font-bold py-4 rounded-xl hover:bg-amber-400 transition-colors bg-amber-500 disabled:opacity-60">
+                                            {isLoading ? (lang === 'ar' ? 'جاري المصادقة...' : 'Authenticating...') : (lang === 'ar' ? 'المصادقة والدخول' : 'Authenticate & Enter')}
                                         </button>
                                     </form>
                                     <div className="mt-4 flex justify-between text-sm">
                                         <button onClick={() => setCurrentPage('home')} className="text-slate-600 hover:text-slate-400">{lang === 'ar' ? 'إلغاء' : 'Cancel'}</button>
-                                        <button onClick={() => { setRecoveryMode('question'); setLoginError(''); setRecoveryInput(''); }} className="text-amber-600 hover:text-amber-500">{lang === 'ar' ? 'فقدت الرمز؟' : 'Lost Key?'}</button>
+                                        <button onClick={() => startRecovery('question')} className="text-amber-600 hover:text-amber-500">{lang === 'ar' ? 'فقدت الرمز؟' : 'Lost Key?'}</button>
                                     </div>
                                 </>
                             ) : (
@@ -559,7 +651,7 @@ const App: React.FC = () => {
                                     </h2>
 
                                     <p className="text-center text-slate-400 text-sm mb-6">
-                                        {recoveryMode === 'question' ? (lang === 'ar' ? deanConfig.securityQuestion : 'Answer your security question') :
+                                        {recoveryMode === 'question' ? (securityQuestion || (lang === 'ar' ? 'سؤال الأمان' : 'Answer your security question')) :
                                             recoveryMode === 'backup' ? (lang === 'ar' ? 'أدخل الرمز الاحتياطي للطوارئ' : 'Enter emergency backup code') :
                                                 (lang === 'ar' ? 'أدخل الرمز الجديد للدخول' : 'Enter your new master key')}
                                     </p>
@@ -574,14 +666,14 @@ const App: React.FC = () => {
                                         />
                                         {loginError && <p className="text-red-400 text-sm text-center">{loginError}</p>}
 
-                                        <button type="submit" className="w-full text-white font-bold py-4 rounded-xl hover:bg-indigo-600 transition-colors bg-indigo-700">
-                                            {recoveryMode === 'reset' ? (lang === 'ar' ? 'حفظ الرمز' : 'Save Key') : (lang === 'ar' ? 'تحقق' : 'Verify')}
+                                        <button type="submit" disabled={isLoading} className="w-full text-white font-bold py-4 rounded-xl hover:bg-indigo-600 transition-colors bg-indigo-700 disabled:opacity-60">
+                                            {isLoading ? '...' : (recoveryMode === 'reset' ? (lang === 'ar' ? 'حفظ الرمز' : 'Save Key') : (lang === 'ar' ? 'تحقق' : 'Verify'))}
                                         </button>
                                     </form>
 
                                     <div className="mt-4 text-center">
                                         {recoveryMode === 'question' && (
-                                            <button onClick={() => { setRecoveryMode('backup'); setLoginError(''); setRecoveryInput(''); }} className="text-xs text-indigo-400 hover:text-indigo-300">
+                                            <button onClick={() => startRecovery('backup')} className="text-xs text-indigo-400 hover:text-indigo-300">
                                                 {lang === 'ar' ? 'استخدام الرمز الاحتياطي بدلاً من ذلك' : 'Use Backup Code instead'}
                                             </button>
                                         )}

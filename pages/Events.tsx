@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { MapPin, Clock, ArrowRight, Filter, X, Calendar as CalendarIcon, ExternalLink, Ticket, Share2, CheckCircle, ChevronLeft, ChevronRight, Sparkles, MonitorPlay, Wifi, Globe, CalendarPlus, ZoomIn, ZoomOut, Move, Download, Video } from 'lucide-react';
 import { Language, EventItem } from '../types';
 
@@ -243,15 +243,62 @@ const Events: React.FC<EventsProps> = ({ lang, events }) => {
 
     const eventTypes = Array.from(new Set(events.map(e => e.type || 'Event')));
 
-    const openModal = (event: EventItem) => {
+    // Track whether we pushed a modal state to history
+    const modalHistoryPushed = useRef(false);
+
+    const openModal = useCallback((event: EventItem) => {
         setSelectedEvent(event);
         document.body.style.overflow = 'hidden';
-    };
+        // Push a history entry so back button closes modal instead of navigating away
+        window.history.pushState({ modal: true }, '');
+        modalHistoryPushed.current = true;
+    }, []);
 
-    const closeModal = () => {
+    const closeModal = useCallback(() => {
         setSelectedEvent(null);
-        document.body.style.overflow = 'unset';
-    };
+        setViewingImage(null);
+        document.body.style.overflow = '';
+        // If we pushed a modal state, go back to remove it
+        if (modalHistoryPushed.current) {
+            modalHistoryPushed.current = false;
+            window.history.back();
+        }
+    }, []);
+
+    // Close modal without popping history (called from popstate handler)
+    const closeModalSilent = useCallback(() => {
+        setSelectedEvent(null);
+        setViewingImage(null);
+        document.body.style.overflow = '';
+        modalHistoryPushed.current = false;
+    }, []);
+
+    // CRITICAL FIX: Handle Back button, Escape key, and cleanup
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                if (viewingImage) setViewingImage(null);
+                else if (selectedEvent) closeModal();
+            }
+        };
+
+        const handlePopState = () => {
+            // Browser back button pressed while modal is open
+            if (selectedEvent || viewingImage) {
+                closeModalSilent();
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        window.addEventListener('popstate', handlePopState);
+
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+            window.removeEventListener('popstate', handlePopState);
+            // BULLETPROOF: Always restore scroll on unmount
+            document.body.style.overflow = '';
+        };
+    }, [selectedEvent, viewingImage, closeModal, closeModalSilent]);
 
     const handleShare = (id: string) => {
         const dummyLink = `${window.location.origin}/event/${id}`;
