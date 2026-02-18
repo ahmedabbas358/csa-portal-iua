@@ -506,6 +506,7 @@ const App: React.FC = () => {
                         lang={lang}
                         onLogout={handleLogout}
                         onGoHome={() => setCurrentPage('home')}
+                        onRefresh={loadDataFromAPI}
                         state={{ events, setEvents, members, setMembers, news, setNews, settings, setSettings, timeline, setTimeline }}
                     />
                 ) : (

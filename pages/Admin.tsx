@@ -4,6 +4,7 @@ import { Language, EventItem, Member, NewsPost, AppSettings, MemberRole, PostDes
 import { LABELS } from '../constants';
 import { generateContentHelper } from '../services/geminiService';
 import ThemeManager from '../components/ThemeManager';
+import { api } from '../services/api';
 
 // --- HELPER FUNCTIONS ---
 
@@ -839,6 +840,7 @@ interface AdminProps {
     lang: Language;
     onLogout: () => void;
     onGoHome: () => void;
+    onRefresh?: () => Promise<void>;
     state: {
         events: EventItem[]; setEvents: React.Dispatch<React.SetStateAction<EventItem[]>>;
         members: Member[]; setMembers: React.Dispatch<React.SetStateAction<Member[]>>;
@@ -848,7 +850,7 @@ interface AdminProps {
     }
 }
 
-const Admin: React.FC<AdminProps> = ({ lang, onLogout, onGoHome, state }) => {
+const Admin: React.FC<AdminProps> = ({ lang, onLogout, onGoHome, onRefresh, state }) => {
     const isRtl = lang === 'ar';
     const [activeTab, setActiveTab] = useState<'dashboard' | 'news' | 'events' | 'team' | 'settings' | 'themes'>('dashboard');
     const [viewMode, setViewMode] = useState<'list' | 'create' | 'edit'>('list');
@@ -877,18 +879,59 @@ const Admin: React.FC<AdminProps> = ({ lang, onLogout, onGoHome, state }) => {
         setViewMode('edit');
     };
 
-    const handleSave = (item: any) => {
-        if (activeTab === 'news') { viewMode === 'create' ? state.setNews([item, ...state.news]) : state.setNews(state.news.map(i => i.id === item.id ? item : i)); }
-        else if (activeTab === 'events') { viewMode === 'create' ? state.setEvents([item, ...state.events]) : state.setEvents(state.events.map(i => i.id === item.id ? item : i)); }
-        else if (activeTab === 'team') { viewMode === 'create' ? state.setMembers([item, ...state.members]) : state.setMembers(state.members.map(i => i.id === item.id ? item : i)); }
-        setViewMode('list');
+    const handleSave = async (item: any) => {
+        try {
+            if (activeTab === 'news') {
+                if (viewMode === 'create') {
+                    const created = await api.manage.createNews(item);
+                    state.setNews([created, ...state.news]);
+                } else {
+                    const updated = await api.manage.updateNews(item.id, item);
+                    state.setNews(state.news.map(i => i.id === item.id ? updated : i));
+                }
+            } else if (activeTab === 'events') {
+                if (viewMode === 'create') {
+                    const created = await api.manage.createEvent(item);
+                    state.setEvents([created, ...state.events]);
+                } else {
+                    const updated = await api.manage.updateEvent(item.id, item);
+                    state.setEvents(state.events.map(i => i.id === item.id ? updated : i));
+                }
+            } else if (activeTab === 'team') {
+                if (viewMode === 'create') {
+                    const created = await api.manage.createMember(item);
+                    state.setMembers([created, ...state.members]);
+                } else {
+                    const updated = await api.manage.updateMember(item.id, item);
+                    state.setMembers(state.members.map(i => i.id === item.id ? updated : i));
+                }
+            }
+            setViewMode('list');
+            if (onRefresh) await onRefresh();
+        } catch (err: any) {
+            alert('Failed to save: ' + (err.message || 'Unknown error'));
+            console.error('Save error:', err);
+        }
     };
 
-    const handleDelete = (id: string) => {
+    const handleDelete = async (id: string) => {
         if (!window.confirm('Delete this item?')) return;
-        if (activeTab === 'news') state.setNews(state.news.filter(i => i.id !== id));
-        else if (activeTab === 'events') state.setEvents(state.events.filter(i => i.id !== id));
-        else if (activeTab === 'team') state.setMembers(state.members.filter(i => i.id !== id));
+        try {
+            if (activeTab === 'news') {
+                await api.manage.deleteNews(id);
+                state.setNews(state.news.filter(i => i.id !== id));
+            } else if (activeTab === 'events') {
+                await api.manage.deleteEvent(id);
+                state.setEvents(state.events.filter(i => i.id !== id));
+            } else if (activeTab === 'team') {
+                await api.manage.deleteMember(id);
+                state.setMembers(state.members.filter(i => i.id !== id));
+            }
+            if (onRefresh) await onRefresh();
+        } catch (err: any) {
+            alert('Failed to delete: ' + (err.message || 'Unknown error'));
+            console.error('Delete error:', err);
+        }
     };
 
     const getFilteredData = () => {
@@ -960,8 +1003,8 @@ const Admin: React.FC<AdminProps> = ({ lang, onLogout, onGoHome, state }) => {
                             <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800"><div className="flex items-center gap-4"><Users size={24} className="text-amber-600" /><div><p className="text-sm font-bold text-gray-400">Members</p><h3 className="text-2xl font-black dark:text-white">{state.members.length}</h3></div></div></div>
                         </div>
                     )}
-                    {activeTab === 'themes' && <ThemeManager settings={state.settings} onUpdateSettings={state.setSettings} />}
-                    {activeTab === 'settings' && <SettingsEditor settings={state.settings} onSave={state.setSettings} timeline={state.timeline} onSaveTimeline={state.setTimeline} />}
+                    {activeTab === 'themes' && <ThemeManager settings={state.settings} onUpdateSettings={async (s: AppSettings) => { state.setSettings(s); try { await api.manage.updateSettings(s); if (onRefresh) await onRefresh(); } catch (e) { console.error('Theme save error:', e); } }} />}
+                    {activeTab === 'settings' && <SettingsEditor settings={state.settings} onSave={async (s: AppSettings) => { state.setSettings(s); try { await api.manage.updateSettings(s); if (onRefresh) await onRefresh(); } catch (e: any) { alert('Settings save failed: ' + e.message); } }} timeline={state.timeline} onSaveTimeline={async (t: TimelineItem[]) => { state.setTimeline(t); try { for (const item of t) { if (item.id && !state.timeline.find(old => old.id === item.id)) { await api.manage.createTimeline(item); } } if (onRefresh) await onRefresh(); } catch (e: any) { alert('Timeline save failed: ' + e.message); } }} />}
                     {['news', 'events', 'team'].includes(activeTab) && (
                         <div className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-sm border border-gray-100 dark:border-slate-800 flex flex-col h-auto md:h-[calc(100vh-160px)] md:overflow-hidden animate-fade-in">
                             {viewMode === 'list' ? (
