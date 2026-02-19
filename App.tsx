@@ -88,6 +88,9 @@ const App: React.FC = () => {
     const [resetToken, setResetToken] = useState('');
     const [securityQuestion, setSecurityQuestion] = useState('');
 
+    // Anti-autofill state
+    const [isReadOnly, setIsReadOnly] = useState(true);
+
     // ═══════════════════════════════════════════════════════════════
     // DATA LOADING FROM API
     // ═══════════════════════════════════════════════════════════════
@@ -656,8 +659,9 @@ const App: React.FC = () => {
                                                 name={`dean-key-${Math.random().toString(36).slice(2)}`}
                                                 value={loginInput}
                                                 onChange={(e) => setLoginInput(e.target.value)}
-                                                autoComplete="new-password"
-                                                readOnly={false}
+                                                autoComplete="off"
+                                                readOnly={isReadOnly}
+                                                onFocus={() => setIsReadOnly(false)}
                                                 autoFocus
                                                 className="w-full p-4 bg-slate-900 border border-slate-700 text-amber-400 font-mono text-sm rounded-xl focus:ring-2 focus:ring-amber-500 outline-none text-center tracking-widest"
                                                 placeholder="****************"

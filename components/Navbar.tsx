@@ -63,8 +63,7 @@ const Navbar: React.FC<NavbarProps> = ({ lang, setLang, currentPage, setPage, is
 
   return (
     <nav
-      className={`fixed top-0 w-full z-[100] transition-all duration-300 ease-out will-change-transform backface-visibility-hidden ${isRtl ? 'font-arabic' : 'font-sans'} ${showSolidNav ? 'glass dark:bg-slate-900/80 dark:border-slate-800 shadow-sm py-3' : 'bg-transparent py-5'}`}
-      style={{ transform: 'translateZ(0)' }}
+      className={`fixed top-0 w-full z-[100] transition-all duration-300 ease-out ${isRtl ? 'font-arabic' : 'font-sans'} ${showSolidNav ? 'glass dark:bg-slate-900/80 dark:border-slate-800 shadow-sm py-3' : 'bg-transparent py-5'}`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center">
