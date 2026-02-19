@@ -188,9 +188,21 @@ app.post('/api/auth/dean/login', asyncHandler(async (req, res) => {
         return res.status(400).json({ error: 'Master key required' });
     }
 
-    const config = await prisma.deanConfig.findFirst({ where: { id: 'config' } });
+    let config = await prisma.deanConfig.findFirst({ where: { id: 'config' } });
+
+    // Auto-initialize on first-ever login
     if (!config) {
-        return res.status(500).json({ error: 'System not initialized' });
+        const hashedKey = await bcrypt.hash(masterKey, SALT_ROUNDS);
+        config = await prisma.deanConfig.create({
+            data: {
+                id: 'config',
+                masterKey: hashedKey,
+                securityQuestion: 'What is the name of the association?',
+                securityAnswer: 'csa',
+                backupCode: crypto.randomBytes(6).toString('hex'),
+            }
+        });
+        console.log('✅ Dean config auto-initialized on first login');
     }
 
     const isValid = await bcrypt.compare(masterKey, config.masterKey);
