@@ -19,7 +19,8 @@ import { api, getDeanToken, getAdminToken, clearDeanToken, clearAdminToken } fro
 
 // --- PATTERN HELPER ---
 const getPatternStyle = (pattern?: string, isDark?: boolean): React.CSSProperties => {
-    const color = isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)';
+    // Increased opacity for better visibility
+    const color = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.07)';
     return getEnginePattern(pattern || 'none', color, isDark || false);
 };
 
@@ -218,7 +219,7 @@ const App: React.FC = () => {
                 }
 
             } catch { /* ignore polling errors */ }
-        }, 10000); // 10 seconds Sync
+        }, 4000); // 4 seconds Sync (Faster for real-time feel)
 
         return () => clearInterval(interval);
     }, []);

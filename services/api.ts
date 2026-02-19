@@ -25,6 +25,9 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
         ...restOptions,
         headers: {
             'Content-Type': 'application/json',
+            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
             ...(optHeaders as Record<string, string>),
         },
     });
