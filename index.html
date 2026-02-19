@@ -12,18 +12,21 @@
 
   <title>CSA - Computer Science Association</title>
   <script>
-    window.onerror = function (msg, url, line, col, error) {
-      var div = document.createElement("div");
-      div.style.cssText = "position:fixed; top:0; left:0; right:0; background:red; color:white; padding:20px; z-index:99999; font-family:monospace; white-space:pre-wrap; font-size: 14px; overflow:auto; max-height: 50vh;";
-      div.innerText = "Runtime Error:\n" + msg + "\n\n" + url + ":" + line + ":" + col + "\n\n" + (error ? error.stack : "");
-      document.body.appendChild(div);
-    };
-    window.addEventListener('unhandledrejection', function (event) {
-      var div = document.createElement("div");
-      div.style.cssText = "position:fixed; bottom:0; left:0; right:0; background:orange; color:black; padding:20px; z-index:99999; font-family:monospace; white-space:pre-wrap; font-size: 14px; overflow:auto; max-height: 50vh;";
-      div.innerText = "Unhandled Promise Rejection:\n" + event.reason;
-      document.body.appendChild(div);
-    });
+    // Error Overlay - Only for Development
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      window.onerror = function (msg, url, line, col, error) {
+        var div = document.createElement("div");
+        div.style.cssText = "position:fixed; top:0; left:0; right:0; background:red; color:white; padding:20px; z-index:99999; font-family:monospace; white-space:pre-wrap; font-size: 14px; overflow:auto; max-height: 50vh;";
+        div.innerText = "Runtime Error:\n" + msg + "\n\n" + url + ":" + line + ":" + col + "\n\n" + (error ? error.stack : "");
+        document.body.appendChild(div);
+      };
+      window.addEventListener('unhandledrejection', function (event) {
+        var div = document.createElement("div");
+        div.style.cssText = "position:fixed; bottom:0; left:0; right:0; background:orange; color:black; padding:20px; z-index:99999; font-family:monospace; white-space:pre-wrap; font-size: 14px; overflow:auto; max-height: 50vh;";
+        div.innerText = "Unhandled Promise Rejection:\n" + event.reason;
+        document.body.appendChild(div);
+      });
+    }
   </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link
