@@ -560,7 +560,7 @@ const parseNewsItem = (n: any) => ({
 
 // ─── News CRUD ──────────────────────────────────────────────────────
 app.post('/api/news', verifyAnyAuth, asyncHandler(async (req, res) => {
-    const { tags, design, media, ...rest } = req.body;
+    const { tags, design, media, mediaType, ...rest } = req.body;
     const news = await prisma.news.create({
         data: {
             ...rest,
@@ -573,7 +573,7 @@ app.post('/api/news', verifyAnyAuth, asyncHandler(async (req, res) => {
 }));
 
 app.put('/api/news/:id', verifyAnyAuth, asyncHandler(async (req, res) => {
-    const { tags, design, media, ...rest } = req.body;
+    const { tags, design, media, mediaType, ...rest } = req.body;
     const data: any = { ...rest };
     if (tags !== undefined) data.tags = JSON.stringify(tags);
     if (design !== undefined) data.design = design ? JSON.stringify(design) : null;
