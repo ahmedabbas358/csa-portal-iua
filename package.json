@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "npx prisma generate --schema=server/prisma/schema.prisma && vite build",
     "preview": "vite preview",
     "start": "npx prisma generate --schema=server/prisma/schema.prisma && npx prisma db push --schema=server/prisma/schema.prisma && npx tsx server/src/index.ts",
     "server": "ts-node server/src/index.ts",
