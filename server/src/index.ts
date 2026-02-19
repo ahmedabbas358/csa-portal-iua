@@ -518,12 +518,33 @@ const verifyAnyAuth = async (req: Request, res: Response, next: NextFunction) =>
 
 // ─── Events CRUD ────────────────────────────────────────────────────
 app.post('/api/events', verifyAnyAuth, asyncHandler(async (req, res) => {
-    const event = await prisma.event.create({ data: req.body });
+    const { title, titleAr, description, descriptionAr, date, time, location, locationAr, image, type, isOnline, meetingLink, isCompleted } = req.body;
+    const event = await prisma.event.create({
+        data: {
+            title, titleAr, description, descriptionAr, date, time, location, locationAr, image, type, isOnline: Boolean(isOnline), meetingLink, isCompleted: Boolean(isCompleted)
+        }
+    });
     res.json(event);
 }));
 
 app.put('/api/events/:id', verifyAnyAuth, asyncHandler(async (req, res) => {
-    const event = await prisma.event.update({ where: { id: req.params.id }, data: req.body });
+    const { title, titleAr, description, descriptionAr, date, time, location, locationAr, image, type, isOnline, meetingLink, isCompleted } = req.body;
+    const data: any = {};
+    if (title !== undefined) data.title = title;
+    if (titleAr !== undefined) data.titleAr = titleAr;
+    if (description !== undefined) data.description = description;
+    if (descriptionAr !== undefined) data.descriptionAr = descriptionAr;
+    if (date !== undefined) data.date = date;
+    if (time !== undefined) data.time = time;
+    if (location !== undefined) data.location = location;
+    if (locationAr !== undefined) data.locationAr = locationAr;
+    if (image !== undefined) data.image = image;
+    if (type !== undefined) data.type = type;
+    if (isOnline !== undefined) data.isOnline = Boolean(isOnline);
+    if (meetingLink !== undefined) data.meetingLink = meetingLink;
+    if (isCompleted !== undefined) data.isCompleted = Boolean(isCompleted);
+
+    const event = await prisma.event.update({ where: { id: req.params.id }, data });
     res.json(event);
 }));
 
@@ -534,12 +555,27 @@ app.delete('/api/events/:id', verifyAnyAuth, asyncHandler(async (req, res) => {
 
 // ─── Members CRUD ───────────────────────────────────────────────────
 app.post('/api/members', verifyAnyAuth, asyncHandler(async (req, res) => {
-    const member = await prisma.member.create({ data: req.body });
+    const { name, role, roleAr, office, officeAr, category, term, image, email } = req.body;
+    const member = await prisma.member.create({
+        data: { name, role, roleAr, office, officeAr, category, term, image, email }
+    });
     res.json(member);
 }));
 
 app.put('/api/members/:id', verifyAnyAuth, asyncHandler(async (req, res) => {
-    const member = await prisma.member.update({ where: { id: req.params.id }, data: req.body });
+    const { name, role, roleAr, office, officeAr, category, term, image, email } = req.body;
+    const data: any = {};
+    if (name !== undefined) data.name = name;
+    if (role !== undefined) data.role = role;
+    if (roleAr !== undefined) data.roleAr = roleAr;
+    if (office !== undefined) data.office = office;
+    if (officeAr !== undefined) data.officeAr = officeAr;
+    if (category !== undefined) data.category = category;
+    if (term !== undefined) data.term = term;
+    if (image !== undefined) data.image = image;
+    if (email !== undefined) data.email = email;
+
+    const member = await prisma.member.update({ where: { id: req.params.id }, data });
     res.json(member);
 }));
 
@@ -604,12 +640,24 @@ app.delete('/api/news/:id', verifyAnyAuth, asyncHandler(async (req, res) => {
 
 // ─── Timeline CRUD ──────────────────────────────────────────────────
 app.post('/api/timeline', verifyAnyAuth, asyncHandler(async (req, res) => {
-    const item = await prisma.timelineItem.create({ data: req.body });
+    const { year, titleAr, titleEn, descAr, descEn, icon } = req.body;
+    const item = await prisma.timelineItem.create({
+        data: { year, titleAr, titleEn, descAr, descEn, icon }
+    });
     res.json(item);
 }));
 
 app.put('/api/timeline/:id', verifyAnyAuth, asyncHandler(async (req, res) => {
-    const item = await prisma.timelineItem.update({ where: { id: req.params.id }, data: req.body });
+    const { year, titleAr, titleEn, descAr, descEn, icon } = req.body;
+    const data: any = {};
+    if (year !== undefined) data.year = year;
+    if (titleAr !== undefined) data.titleAr = titleAr;
+    if (titleEn !== undefined) data.titleEn = titleEn;
+    if (descAr !== undefined) data.descAr = descAr;
+    if (descEn !== undefined) data.descEn = descEn;
+    if (icon !== undefined) data.icon = icon;
+
+    const item = await prisma.timelineItem.update({ where: { id: req.params.id }, data });
     res.json(item);
 }));
 
@@ -620,10 +668,41 @@ app.delete('/api/timeline/:id', verifyAnyAuth, asyncHandler(async (req, res) => 
 
 // ─── Settings ───────────────────────────────────────────────────────
 app.put('/api/settings', verifyAnyAuth, asyncHandler(async (req, res) => {
+    const { siteNameEn, siteNameAr, logoUrl, primaryColor, secondaryColor, aboutTextAr, aboutTextEn, visionAr, visionEn, missionAr, missionEn, backgroundPattern, borderRadius, animationSpeed, fontStyle, iconStyle } = req.body;
+
+    // Whitelist fields
+    const data = {
+        siteNameEn, siteNameAr, logoUrl, primaryColor, secondaryColor, aboutTextAr, aboutTextEn, visionAr, visionEn, missionAr, missionEn, backgroundPattern, borderRadius, animationSpeed, fontStyle, iconStyle
+    };
+
+    // Filter out undefineds for update
+    const updateData = { ...data };
+    Object.keys(updateData).forEach(key => (updateData as any)[key] === undefined && delete (updateData as any)[key]);
+
     const settings = await prisma.appSetting.upsert({
         where: { id: 'main' },
-        update: req.body,
-        create: { id: 'main', ...req.body },
+        update: updateData,
+        create: {
+            id: 'main',
+            // For create, we merge defaults with provided data. Since schema has defaults, we can just pass what we have.
+            // Typically Settings are initialized via Seed, but this handles fresh start.
+            siteNameEn: siteNameEn || "CS Student Association",
+            siteNameAr: siteNameAr || "",
+            logoUrl: logoUrl || "",
+            primaryColor: primaryColor || "#0284c7",
+            secondaryColor: secondaryColor || "#0c4a6e",
+            aboutTextAr: aboutTextAr || "",
+            aboutTextEn: aboutTextEn || "",
+            visionAr: visionAr || "",
+            visionEn: visionEn || "",
+            missionAr: missionAr || "",
+            missionEn: missionEn || "",
+            backgroundPattern: backgroundPattern || "none",
+            borderRadius: borderRadius || "xl",
+            animationSpeed: animationSpeed || "normal",
+            fontStyle: fontStyle || "cairo",
+            iconStyle
+        },
     });
     res.json(settings);
 }));
