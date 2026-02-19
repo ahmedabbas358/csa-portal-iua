@@ -652,7 +652,7 @@ const NewsEditor = ({ item, onSave, onCancel, primaryColor }: { item?: NewsPost,
                     )}
                 </div>
             </div>
-            <div className="w-full md:w-[420px] bg-gray-50 dark:bg-slate-800 border-l border-gray-100 dark:border-slate-700 flex flex-col h-auto overflow-hidden">
+            <div className="w-full md:w-[420px] bg-gray-50 dark:bg-slate-800 border-l border-gray-100 dark:border-slate-700 flex flex-col h-auto overflow-visible pb-32 md:pb-0">
                 {/* DESKTOP PREVIEW (Type: Content/Design) */}
                 <div className="hidden md:block p-6 border-b dark:border-slate-700 bg-white dark:bg-slate-900 flex-shrink-0">
                     <h4 className="font-bold text-gray-500 text-xs uppercase mb-3 px-1">Live Preview</h4>
