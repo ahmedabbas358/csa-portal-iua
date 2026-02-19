@@ -23,6 +23,7 @@ export const ALL_PATTERNS = [
     // Legacy mapping support
     'cubes', 'circuit', 'hexagons',
     ...['circuit-board', 'topography', 'texture-noise', 'gradient-radial', 'gradient-linear', 'gradient-angular'],
+    ...['matrix', 'binary', 'network', 'chip'], // Added Tech Themes
     ...Array.from({ length: 60 }, (_, i) => `abstract-${i + 1}`) // Placeholder for procedural abstract patterns
 ];
 
@@ -80,6 +81,20 @@ export const getPatternStyle = (pattern: string, color: string, isDark: boolean)
 
         case pattern === 'topography':
             return { backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3z' fill='${fill}' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E")` };
+
+        // --- NEW TECHNICAL THEMES ---
+        case pattern === 'matrix':
+            return { backgroundImage: `linear-gradient(0deg, transparent 24%, ${c} 25%, ${c} 26%, transparent 27%, transparent 74%, ${c} 75%, ${c} 76%, transparent 77%, transparent), linear-gradient(90deg, transparent 24%, ${c} 25%, ${c} 26%, transparent 27%, transparent 74%, ${c} 75%, ${c} 76%, transparent 77%, transparent)`, backgroundSize: '30px 30px' };
+
+        case pattern === 'binary':
+            return { backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='${fill}' fill-opacity='0.1' font-family='monospace' font-size='10'%3E%3Ctext x='10' y='15'%3E1%3C/text%3E%3Ctext x='30' y='15'%3E0%3C/text%3E%3Ctext x='50' y='15'%3E1%3C/text%3E%3Ctext x='10' y='35'%3E0%3C/text%3E%3Ctext x='30' y='35'%3E1%3C/text%3E%3Ctext x='50' y='35'%3E0%3C/text%3E%3Ctext x='10' y='55'%3E1%3C/text%3E%3Ctext x='30' y='55'%3E0%3C/text%3E%3Ctext x='50' y='55'%3E1%3C/text%3E%3C/g%3E%3C/svg%3E")` };
+
+        case pattern === 'network':
+            return { backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='10' cy='10' r='2' fill='${fill}' fill-opacity='0.2'/%3E%3Ccircle cx='50' cy='50' r='2' fill='${fill}' fill-opacity='0.2'/%3E%3Cpath d='M10 10 L50 50' stroke='${stroke}' stroke-opacity='0.1' stroke-width='1'/%3E%3Ccircle cx='90' cy='20' r='2' fill='${fill}' fill-opacity='0.2'/%3E%3Cpath d='M50 50 L90 20' stroke='${stroke}' stroke-opacity='0.1' stroke-width='1'/%3E%3C/svg%3E")` };
+
+        case pattern === 'chip':
+            return { backgroundImage: `conic-gradient(from 90deg at 1px 1px, transparent 90deg, ${c} 0) 0 0/20px 20px` };
+
 
         // Fallback
         default:

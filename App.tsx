@@ -95,6 +95,7 @@ const App: React.FC = () => {
     // DATA LOADING FROM API
     // ═══════════════════════════════════════════════════════════════
 
+
     const loadDataFromAPI = useCallback(async () => {
         try {
             const [eventsData, membersData, newsData, timelineData, settingsData] = await Promise.allSettled([
@@ -166,30 +167,59 @@ const App: React.FC = () => {
     }, [loadDataFromAPI]);
 
     // ═══════════════════════════════════════════════════════════════
-    // SETTINGS SYNC & PERSISTENCE
+    // SETTINGS & CONTENT SYNC (REAL-TIME-ISH)
     // ═══════════════════════════════════════════════════════════════
 
-    // 1. Persist settings to LocalStorage whenever they change (so we cache the LATEST server data)
+    // 1. Persist settings to LocalStorage
     useEffect(() => {
         localStorage.setItem('csa_app_settings', JSON.stringify(settings));
     }, [settings]);
 
-    // 2. Poll for settings updates every 10 seconds to keep all users in sync
+    // 2. Poll for ALL dynamic content updates everyone 10 seconds
     useEffect(() => {
         const interval = setInterval(async () => {
             try {
-                const newSettings = await api.getSettings();
+                // Fetch critical dynamic data
+                const [newSettings, newNews, newEvents] = await Promise.all([
+                    api.getSettings(),
+                    api.getNews(),
+                    api.getEvents()
+                ]);
+
+                // Sync Settings
                 if (newSettings) {
                     setSettings(prev => {
-                        // Only update if actually changed to avoid re-renders
                         if (JSON.stringify(prev) !== JSON.stringify({ ...prev, ...newSettings })) {
                             return { ...prev, ...newSettings };
                         }
                         return prev;
                     });
                 }
+
+                // Sync News (Likes, Comments, New Posts)
+                if (newNews && newNews.length > 0) {
+                    setNews(prev => {
+                        // Deep compare to avoid flicker
+                        if (JSON.stringify(prev) !== JSON.stringify(newNews)) {
+                            return newNews;
+                        }
+                        return prev;
+                    });
+                }
+
+                // Sync Events (Registrations, New Events)
+                if (newEvents && newEvents.length > 0) {
+                    setEvents(prev => {
+                        if (JSON.stringify(prev) !== JSON.stringify(newEvents)) {
+                            return newEvents;
+                        }
+                        return prev;
+                    });
+                }
+
             } catch { /* ignore polling errors */ }
-        }, 10000);
+        }, 10000); // 10 seconds Sync
+
         return () => clearInterval(interval);
     }, []);
 
@@ -202,7 +232,6 @@ const App: React.FC = () => {
             if (event.state && event.state.page) {
                 setCurrentPage(event.state.page);
             } else if (!event.state || !event.state.modal) {
-                // Only set home if it's not a modal state (Events modal handles its own)
                 setCurrentPage('home');
             }
         };
@@ -210,6 +239,8 @@ const App: React.FC = () => {
         window.addEventListener('popstate', handlePopState);
         return () => window.removeEventListener('popstate', handlePopState);
     }, []);
+
+
 
     // Sync Page with History
     useEffect(() => {
@@ -737,8 +768,25 @@ const App: React.FC = () => {
         }
     };
 
+    // Helper to get RGB from hex for CSS vars
+    const hexToRgb = (hex: string) => {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result
+            ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}`
+            : '0, 0, 0';
+    };
+
     return (
-        <div className={`min-h-screen flex flex-col bg-slate-50 dark:bg-slate-900 text-gray-800 dark:text-gray-100 transition-colors duration-500 ${lang === 'ar' ? 'dir-rtl' : 'dir-ltr'}`} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+        <div
+            className={`min-h-screen flex flex-col bg-slate-50 dark:bg-slate-900 text-gray-800 dark:text-gray-100 transition-colors duration-500 ${lang === 'ar' ? 'dir-rtl' : 'dir-ltr'}`}
+            dir={lang === 'ar' ? 'rtl' : 'ltr'}
+            style={{
+                '--primary-color': settings.primaryColor,
+                '--primary-rgb': hexToRgb(settings.primaryColor),
+                '--secondary-color': settings.secondaryColor,
+                '--secondary-rgb': hexToRgb(settings.secondaryColor),
+            } as React.CSSProperties}
+        >
             {/* Global Pattern Overlay */}
             {currentPage !== 'login' && currentPage !== 'dean-login' && currentPage !== 'dean-dashboard' && settings.backgroundPattern && settings.backgroundPattern !== 'none' && (
                 <div
