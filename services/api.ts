@@ -4,7 +4,7 @@
  * Regular users need NO login to browse the site.
  */
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_BASE = import.meta.env.VITE_API_URL || '';
 
 // ─── Token Storage Helpers ──────────────────────────────────────────
 const DEAN_TOKEN_KEY = 'csa_dean_token';
