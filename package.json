@@ -10,7 +10,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "start": "ts-node server/src/index.ts",
+    "start": "npx tsx server/src/index.ts",
     "server": "ts-node server/src/index.ts",
     "db:generate": "prisma generate --schema=server/prisma/schema.prisma",
     "db:push": "prisma db push --schema=server/prisma/schema.prisma",
@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@google/genai": "^1.41.0",
+    "@prisma/client": "^5.10.0",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
@@ -28,12 +29,13 @@
     "lucide-react": "^0.564.0",
     "morgan": "^1.10.1",
     "multer": "^2.0.2",
+    "prisma": "^5.10.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "serve": "^14.2.4"
+    "serve": "^14.2.4",
+    "tsx": "^4.21.0"
   },
   "devDependencies": {
-    "@prisma/client": "^5.10.0",
     "@types/bcrypt": "^6.0.0",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
@@ -48,7 +50,6 @@
     "autoprefixer": "^10.4.20",
     "nodemon": "^3.1.11",
     "postcss": "^8.4.49",
-    "prisma": "^5.10.0",
     "tailwindcss": "^3.4.15",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",

@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Build cache
+.vite/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -24,6 +27,7 @@ dist-ssr
 *.sw?
 
 .env
+.env.local
 *.db
-node_modules/
 server/uploads/
+server/_deprecated_node_modules/
