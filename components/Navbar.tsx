@@ -66,7 +66,7 @@ const Navbar: React.FC<NavbarProps> = ({ lang, setLang, currentPage, setPage, is
       className={`fixed top-0 w-full z-[100] transition-all duration-300 ease-out ${isRtl ? 'font-arabic' : 'font-sans'} ${showSolidNav ? 'glass dark:bg-slate-900/80 dark:border-slate-800 shadow-sm py-3' : 'bg-transparent py-5'}`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center relative h-16">
 
           {/* Logo Section */}
           <div className="flex items-center cursor-pointer group" onClick={() => setPage('home')}>
@@ -91,7 +91,7 @@ const Navbar: React.FC<NavbarProps> = ({ lang, setLang, currentPage, setPage, is
           </div>
 
           {/* Desktop Navigation */}
-          <div className={`hidden md:flex items-center p-1.5 rounded-full transition-all duration-300 ${showSolidNav ? 'bg-gray-100/50 dark:bg-slate-800/50 border border-gray-200/50 dark:border-slate-700/50' : 'bg-white/10 backdrop-blur-md border border-white/20 shadow-lg'}`}>
+          <div className={`hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center p-1.5 rounded-full transition-all duration-300 ${showSolidNav ? 'bg-gray-100/50 dark:bg-slate-800/50 border border-gray-200/50 dark:border-slate-700/50' : 'bg-white/10 backdrop-blur-md border border-white/20 shadow-lg'}`}>
             {navItems.map((item) => (
               <button
                 key={item.id}
