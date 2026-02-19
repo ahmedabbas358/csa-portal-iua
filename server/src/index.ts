@@ -203,9 +203,30 @@ app.post('/api/auth/dean/login', asyncHandler(async (req, res) => {
             }
         });
         console.log('✅ Dean config auto-initialized on first login');
+        // Fall through — bcrypt.compare will match since we just hashed it
     }
 
-    const isValid = await bcrypt.compare(masterKey, config.masterKey);
+    // Check if the stored masterKey is a bcrypt hash (starts with $2)
+    const isBcryptHash = config.masterKey.startsWith('$2');
+
+    let isValid = false;
+    if (isBcryptHash) {
+        // Normal flow: compare against bcrypt hash
+        isValid = await bcrypt.compare(masterKey, config.masterKey);
+    } else {
+        // Legacy plaintext key — compare directly
+        isValid = (masterKey === config.masterKey);
+        if (isValid) {
+            // Auto-migrate: hash the plaintext key for security
+            const hashedKey = await bcrypt.hash(masterKey, SALT_ROUNDS);
+            await prisma.deanConfig.update({
+                where: { id: 'config' },
+                data: { masterKey: hashedKey }
+            });
+            console.log('✅ Dean master key auto-migrated from plaintext to bcrypt');
+        }
+    }
+
     if (!isValid) {
         return res.status(401).json({ error: 'Invalid master key' });
     }
@@ -725,10 +746,39 @@ app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     });
 });
 
-// ═══════════════════════════════════════════════════════════════════
-// START SERVER
-// ═══════════════════════════════════════════════════════════════════
+// Default Dean Master Key (same as constants.ts on the frontend)
+const DEFAULT_DEAN_KEY = 'CSA_MASTER_KEY_2024_AFRICA_UNI_SECURE_ACCESS_V1_X99_AB7_KL2';
 
-app.listen(PORT, () => {
+async function initializeDatabase() {
+    try {
+        // Ensure AppSettings exist
+        const settings = await prisma.appSetting.findFirst({ where: { id: 'main' } });
+        if (!settings) {
+            await prisma.appSetting.create({ data: { id: 'main' } });
+            console.log('✅ Default AppSettings created');
+        }
+
+        // Ensure DeanConfig exists with the known master key
+        const deanConfig = await prisma.deanConfig.findFirst({ where: { id: 'config' } });
+        if (!deanConfig) {
+            const hashedKey = await bcrypt.hash(DEFAULT_DEAN_KEY, SALT_ROUNDS);
+            await prisma.deanConfig.create({
+                data: {
+                    id: 'config',
+                    masterKey: hashedKey,
+                    securityQuestion: 'What is the name of the association?',
+                    securityAnswer: 'csa',
+                    backupCode: crypto.randomBytes(6).toString('hex'),
+                }
+            });
+            console.log('✅ DeanConfig seeded with default master key');
+        }
+    } catch (err) {
+        console.error('⚠️ Database initialization warning:', err);
+    }
+}
+
+app.listen(PORT, async () => {
     console.log(`🚀 CSA API Server running on http://localhost:${PORT}`);
+    await initializeDatabase();
 });
