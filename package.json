@@ -14,8 +14,7 @@
     "server": "ts-node server/src/index.ts",
     "db:generate": "prisma generate --schema=server/prisma/schema.prisma",
     "db:push": "prisma db push --schema=server/prisma/schema.prisma",
-    "db:studio": "prisma studio --schema=server/prisma/schema.prisma",
-    "db:seed": "npx ts-node server/prisma/seed.ts"
+    "db:studio": "prisma studio --schema=server/prisma/schema.prisma"
   },
   "dependencies": {
     "@google/genai": "^1.41.0",
@@ -56,7 +55,7 @@
     "vite": "^6.0.0"
   },
   "description": "The official digital platform for the Computer Science Association at International University of Africa. A modern, high-performance web application designed to connect students with the latest tech news, events, and academic resources.",
-  "main": "index.js",
+  "main": "server/src/index.ts",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ahmedabbas358/csa-portal-iua.git"
