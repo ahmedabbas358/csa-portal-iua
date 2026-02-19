@@ -154,11 +154,7 @@ app.get('/api/members', asyncHandler(async (_req, res) => {
 app.get('/api/news', asyncHandler(async (_req, res) => {
     const news = await prisma.news.findMany({ orderBy: { createdAt: 'desc' } });
     // Parse JSON fields
-    const parsed = news.map(n => ({
-        ...n,
-        tags: (() => { try { return JSON.parse(n.tags); } catch { return []; } })(),
-        design: n.design ? (() => { try { return JSON.parse(n.design); } catch { return null; } })() : null,
-    }));
+    const parsed = news.map(parseNewsItem);
     res.json(parsed);
 }));
 
@@ -553,6 +549,14 @@ app.delete('/api/members/:id', verifyAnyAuth, asyncHandler(async (req, res) => {
 }));
 
 // ─── News CRUD ──────────────────────────────────────────────────────
+// Helper to parse JSON fields
+const parseNewsItem = (n: any) => ({
+    ...n,
+    tags: (() => { try { return typeof n.tags === 'string' ? JSON.parse(n.tags) : n.tags; } catch { return []; } })(),
+    design: n.design ? (() => { try { return typeof n.design === 'string' ? JSON.parse(n.design) : n.design; } catch { return null; } })() : null,
+});
+
+// ─── News CRUD ──────────────────────────────────────────────────────
 app.post('/api/news', verifyAnyAuth, asyncHandler(async (req, res) => {
     const { tags, design, ...rest } = req.body;
     const news = await prisma.news.create({
@@ -562,7 +566,7 @@ app.post('/api/news', verifyAnyAuth, asyncHandler(async (req, res) => {
             design: design ? JSON.stringify(design) : null,
         }
     });
-    res.json(news);
+    res.json(parseNewsItem(news));
 }));
 
 app.put('/api/news/:id', verifyAnyAuth, asyncHandler(async (req, res) => {
@@ -571,7 +575,7 @@ app.put('/api/news/:id', verifyAnyAuth, asyncHandler(async (req, res) => {
     if (tags !== undefined) data.tags = JSON.stringify(tags);
     if (design !== undefined) data.design = design ? JSON.stringify(design) : null;
     const news = await prisma.news.update({ where: { id: req.params.id }, data });
-    res.json(news);
+    res.json(parseNewsItem(news));
 }));
 
 app.delete('/api/news/:id', verifyAnyAuth, asyncHandler(async (req, res) => {
