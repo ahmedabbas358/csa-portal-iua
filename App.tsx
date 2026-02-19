@@ -28,7 +28,12 @@ const App: React.FC = () => {
     const [events, setEvents] = useState<EventItem[]>(INITIAL_STATE.events);
     const [members, setMembers] = useState<Member[]>(INITIAL_STATE.members);
     const [news, setNews] = useState<NewsPost[]>(INITIAL_STATE.news);
-    const [settings, setSettings] = useState<AppSettings>(INITIAL_STATE.settings);
+    const [settings, setSettings] = useState<AppSettings>(() => {
+        try {
+            const stored = localStorage.getItem('csa_app_settings');
+            return stored ? { ...INITIAL_STATE.settings, ...JSON.parse(stored) } : INITIAL_STATE.settings;
+        } catch { return INITIAL_STATE.settings; }
+    });
     const [timeline, setTimeline] = useState<TimelineItem[]>(INITIAL_STATE.timeline);
     const [dataLoaded, setDataLoaded] = useState(false);
 
@@ -148,13 +153,35 @@ const App: React.FC = () => {
         };
 
         init();
-
-        // Load App Settings from localStorage (for theme persistence even offline)
-        const storedSettings = localStorage.getItem('csa_app_settings');
-        if (storedSettings) {
-            try { setSettings(prev => ({ ...prev, ...JSON.parse(storedSettings) })); } catch { }
-        }
     }, [loadDataFromAPI]);
+
+    // ═══════════════════════════════════════════════════════════════
+    // SETTINGS SYNC & PERSISTENCE
+    // ═══════════════════════════════════════════════════════════════
+
+    // 1. Persist settings to LocalStorage whenever they change (so we cache the LATEST server data)
+    useEffect(() => {
+        localStorage.setItem('csa_app_settings', JSON.stringify(settings));
+    }, [settings]);
+
+    // 2. Poll for settings updates every 10 seconds to keep all users in sync
+    useEffect(() => {
+        const interval = setInterval(async () => {
+            try {
+                const newSettings = await api.getSettings();
+                if (newSettings) {
+                    setSettings(prev => {
+                        // Only update if actually changed to avoid re-renders
+                        if (JSON.stringify(prev) !== JSON.stringify({ ...prev, ...newSettings })) {
+                            return { ...prev, ...newSettings };
+                        }
+                        return prev;
+                    });
+                }
+            } catch { /* ignore polling errors */ }
+        }, 10000);
+        return () => clearInterval(interval);
+    }, []);
 
     // ═══════════════════════════════════════════════════════════════
     // HISTORY / BACK BUTTON HANDLING
