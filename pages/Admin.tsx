@@ -699,11 +699,17 @@ const NewsEditor = ({ item, onSave, onCancel, primaryColor }: { item?: NewsPost,
                         )}
                     </div>
 
-                    <div className="pt-4 border-t dark:border-slate-700 mt-auto space-y-3 flex-shrink-0 sticky bottom-0 bg-gray-50 dark:bg-slate-800 pb-6 z-10 transition-all opacity-100">
+                    <div className="hidden md:block pt-4 border-t dark:border-slate-700 mt-auto space-y-3 flex-shrink-0 sticky bottom-0 bg-gray-50 dark:bg-slate-800 pb-6 z-10 transition-all opacity-100">
                         <button onClick={() => onSave({ ...formData, lastUpdated: new Date().toISOString() })} className="w-full py-4 text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all text-sm md:text-base" style={{ backgroundColor: primaryColor }}>Save Post</button>
                         <button onClick={onCancel} className="w-full py-4 bg-white dark:bg-slate-700 font-bold rounded-xl border dark:border-slate-600 text-gray-600 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-600 transition-colors text-sm md:text-base">Cancel</button>
                     </div>
                 </div>
+            </div>
+
+            {/* MOBILE ACTION BAR (Fixed Bottom) */}
+            <div className="md:hidden fixed bottom-0 left-0 w-full bg-white dark:bg-slate-900 border-t dark:border-slate-800 p-4 z-50 flex gap-3 shadow-[0_-4px_20px_rgba(0,0,0,0.1)]">
+                <button onClick={onCancel} className="flex-1 py-3 bg-gray-100 dark:bg-slate-800 font-bold rounded-xl text-gray-600 dark:text-gray-300">Cancel</button>
+                <button onClick={() => onSave({ ...formData, lastUpdated: new Date().toISOString() })} className="flex-1 py-3 text-white font-bold rounded-xl shadow-lg" style={{ backgroundColor: primaryColor }}>Save</button>
             </div>
         </div>
     );
