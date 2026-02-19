@@ -553,7 +553,7 @@ const NewsEditor = ({ item, onSave, onCancel, primaryColor }: { item?: NewsPost,
                     <button onClick={() => setEditorTab('content')} className={`flex-1 py-4 text-sm font-bold flex items-center justify-center gap-2 border-b-2 transition-colors ${editorTab === 'content' ? 'text-brand-600 border-brand-600 bg-brand-50/50 dark:bg-brand-900/10' : 'text-gray-400 border-transparent'}`}><FileText size={18} /> Details</button>
                     <button onClick={() => setEditorTab('design')} className={`flex-1 py-4 text-sm font-bold flex items-center justify-center gap-2 border-b-2 transition-colors ${editorTab === 'design' ? 'text-brand-600 border-brand-600 bg-brand-50/50 dark:bg-brand-900/10' : 'text-gray-400 border-transparent'}`}><Crop size={18} /> Studio</button>
                 </div>
-                <div className="flex-1 p-4 md:p-6 space-y-4 pb-24 md:pb-6">
+                <div className="flex-1 p-4 md:p-6 space-y-4 pb-32 md:pb-6">
                     {editorTab === 'content' ? (
                         <div className="space-y-6">
                             {/* Title & Content */}
@@ -706,8 +706,8 @@ const NewsEditor = ({ item, onSave, onCancel, primaryColor }: { item?: NewsPost,
                 </div>
             </div>
 
-            {/* MOBILE ACTION BAR (Fixed Bottom) */}
-            <div className="md:hidden fixed bottom-0 left-0 w-full bg-white dark:bg-slate-900 border-t dark:border-slate-800 p-4 z-50 flex gap-3 shadow-[0_-4px_20px_rgba(0,0,0,0.1)]">
+            {/* MOBILE ACTION BAR (Floating Dock) */}
+            <div className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-sm bg-white/90 dark:bg-slate-900/90 backdrop-blur-lg border border-gray-200 dark:border-slate-700 p-2 z-[60] flex gap-2 shadow-2xl rounded-2xl">
                 <button onClick={onCancel} className="flex-1 py-3 bg-gray-100 dark:bg-slate-800 font-bold rounded-xl text-gray-600 dark:text-gray-300">Cancel</button>
                 <button onClick={() => onSave({ ...formData, lastUpdated: new Date().toISOString() })} className="flex-1 py-3 text-white font-bold rounded-xl shadow-lg" style={{ backgroundColor: primaryColor }}>Save</button>
             </div>
