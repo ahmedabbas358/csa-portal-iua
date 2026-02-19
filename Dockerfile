@@ -9,6 +9,9 @@ RUN npm ci
 
 COPY . .
 
+# Strip any stray Windows carriage-returns from the Prisma schema
+RUN sed -i 's/\r$//' server/prisma/schema.prisma
+
 RUN npx prisma generate --schema=server/prisma/schema.prisma
 
 RUN npm run build
