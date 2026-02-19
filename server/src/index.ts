@@ -550,30 +550,35 @@ app.delete('/api/members/:id', verifyAnyAuth, asyncHandler(async (req, res) => {
 
 // ─── News CRUD ──────────────────────────────────────────────────────
 // Helper to parse JSON fields
+// Helper to parse JSON fields
 const parseNewsItem = (n: any) => ({
     ...n,
     tags: (() => { try { return typeof n.tags === 'string' ? JSON.parse(n.tags) : n.tags; } catch { return []; } })(),
     design: n.design ? (() => { try { return typeof n.design === 'string' ? JSON.parse(n.design) : n.design; } catch { return null; } })() : null,
+    media: n.media ? (() => { try { return typeof n.media === 'string' ? JSON.parse(n.media) : n.media; } catch { return []; } })() : [],
 });
 
 // ─── News CRUD ──────────────────────────────────────────────────────
 app.post('/api/news', verifyAnyAuth, asyncHandler(async (req, res) => {
-    const { tags, design, ...rest } = req.body;
+    const { tags, design, media, ...rest } = req.body;
     const news = await prisma.news.create({
         data: {
             ...rest,
             tags: JSON.stringify(tags || []),
             design: design ? JSON.stringify(design) : null,
+            media: media ? JSON.stringify(media) : null,
         }
     });
     res.json(parseNewsItem(news));
 }));
 
 app.put('/api/news/:id', verifyAnyAuth, asyncHandler(async (req, res) => {
-    const { tags, design, ...rest } = req.body;
+    const { tags, design, media, ...rest } = req.body;
     const data: any = { ...rest };
     if (tags !== undefined) data.tags = JSON.stringify(tags);
     if (design !== undefined) data.design = design ? JSON.stringify(design) : null;
+    if (media !== undefined) data.media = media ? JSON.stringify(media) : null;
+
     const news = await prisma.news.update({ where: { id: req.params.id }, data });
     res.json(parseNewsItem(news));
 }));

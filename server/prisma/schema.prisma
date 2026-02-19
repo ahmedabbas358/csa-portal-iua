@@ -55,6 +55,8 @@ model News {
   likes     Int      @default(0)
   status    String   @default("published")
   design    String?
+  media     String? // JSON string for gallery
+  aspectRatio String? // 'square', 'portrait', 'landscape', 'story'
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
