@@ -415,6 +415,42 @@ const SettingsEditor = ({ settings, onSave, timeline, onSaveTimeline }: {
     );
 };
 
+// --- POST PREVIEW COMPONENT ---
+const PostPreview = ({ item, design, aspectRatio }: { item: any, design: PostDesignConfig | undefined, aspectRatio: string }) => {
+    const mediaUrl = item?.url || '';
+    const mediaType = item?.type || 'image';
+    const mediaStyle: React.CSSProperties = {
+        transform: `scale(${design?.imagePosition?.scale || 1}) translate(${-(50 - (design?.imagePosition?.x || 50))}%, ${-(50 - (design?.imagePosition?.y || 50))}%)`,
+        filter: `brightness(${design?.filters?.brightness || 100}%) contrast(${design?.filters?.contrast || 100}%) saturate(${design?.filters?.saturate || 100}%) grayscale(${design?.filters?.grayscale || 0}%) sepia(${design?.filters?.sepia || 0}%)`,
+        objectFit: 'cover',
+        transformOrigin: 'center center'
+    };
+
+    return (
+        <div className={`relative w-full overflow-hidden bg-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 group ${getAspectClass(aspectRatio)}`}>
+            {mediaUrl ? (
+                mediaType === 'video' ? (
+                    <video src={mediaUrl} className="w-full h-full object-cover" autoPlay muted loop playsInline style={mediaStyle} />
+                ) : (
+                    <img src={mediaUrl} className="w-full h-full object-cover" alt="Preview" style={mediaStyle} />
+                )
+            ) : (
+                <div className="w-full h-full flex flex-col items-center justify-center text-gray-500 bg-gray-100 dark:bg-slate-800">
+                    <ImageIcon size={32} className="mb-2 opacity-50" />
+                    <span className="text-xs font-bold">No Media</span>
+                </div>
+            )}
+
+            {/* Text Overlay */}
+            {design?.overlayText && (
+                <div className={`absolute inset-0 pointer-events-none flex flex-col p-4 z-10 ${design.textAlignment === 'left' ? 'justify-start items-start text-left' : design.textAlignment === 'right' ? 'justify-end items-end text-right' : 'justify-center items-center text-center'}`} style={{ backgroundColor: `rgba(0,0,0,${(design.overlayOpacity || 0) / 100})` }}>
+                    <p className={`text-xl md:text-2xl break-words whitespace-pre-line ${design.fontStyle === 'typewriter' ? 'font-mono' : design.fontStyle === 'classic' ? 'font-serif' : 'font-sans font-bold'}`} style={{ color: design.textColor }}>{design.overlayText}</p>
+                </div>
+            )}
+        </div>
+    );
+};
+
 // --- NEWS EDITOR ---
 const NewsEditor = ({ item, onSave, onCancel, primaryColor }: { item?: NewsPost, onSave: (i: NewsPost) => void, onCancel: () => void, primaryColor: string }) => {
     const [formData, setFormData] = useState<NewsPost>(item || {
@@ -502,9 +538,17 @@ const NewsEditor = ({ item, onSave, onCancel, primaryColor }: { item?: NewsPost,
         });
     };
 
+    // Use first media item for preview or fallback
+    const activeMedia = formData.media && formData.media.length > 0 ? formData.media[0] : (formData.image ? { url: formData.image, type: formData.mediaType } : null);
+
     return (
-        <div className="flex flex-col md:flex-row w-full h-auto md:h-full bg-white dark:bg-slate-900 text-gray-900 dark:text-white">
-            <div className="flex-1 flex flex-col md:overflow-hidden">
+        <div className="flex flex-col md:flex-row w-full h-full bg-white dark:bg-slate-900 text-gray-900 dark:text-white overflow-hidden">
+            {/* MOBILE PREVIEW (Visible only on mobile) */}
+            <div className="md:hidden bg-gray-50 dark:bg-slate-950 p-4 border-b dark:border-slate-800 flex-shrink-0">
+                <PostPreview item={activeMedia} design={formData.design} aspectRatio={formData.aspectRatio || 'square'} />
+            </div>
+
+            <div className="flex-1 flex flex-col md:overflow-hidden h-full">
                 <div className="flex border-b border-gray-100 dark:border-slate-700 flex-shrink-0">
                     <button onClick={() => setEditorTab('content')} className={`flex-1 py-4 text-sm font-bold flex items-center justify-center gap-2 border-b-2 transition-colors ${editorTab === 'content' ? 'text-brand-600 border-brand-600 bg-brand-50/50 dark:bg-brand-900/10' : 'text-gray-400 border-transparent'}`}><FileText size={18} /> Details</button>
                     <button onClick={() => setEditorTab('design')} className={`flex-1 py-4 text-sm font-bold flex items-center justify-center gap-2 border-b-2 transition-colors ${editorTab === 'design' ? 'text-brand-600 border-brand-600 bg-brand-50/50 dark:bg-brand-900/10' : 'text-gray-400 border-transparent'}`}><Crop size={18} /> Studio</button>
@@ -608,49 +652,57 @@ const NewsEditor = ({ item, onSave, onCancel, primaryColor }: { item?: NewsPost,
                     )}
                 </div>
             </div>
-            <div className="w-full md:w-[400px] bg-gray-50 dark:bg-slate-800 p-6 border-l border-gray-100 dark:border-slate-700 flex flex-col h-auto md:h-full md:overflow-y-auto space-y-6">
-                <div className="flex items-center justify-between">
-                    <h4 className="font-bold text-gray-700 dark:text-gray-300">Media Gallery</h4>
-                    <button onClick={addMedia} className="text-xs font-bold text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-900/30 px-3 py-1.5 rounded-lg hover:bg-brand-100 transition-colors flex items-center gap-1">
-                        <Plus size={14} /> Add Media
-                    </button>
+            <div className="w-full md:w-[420px] bg-gray-50 dark:bg-slate-800 border-l border-gray-100 dark:border-slate-700 flex flex-col h-full overflow-hidden">
+                {/* DESKTOP PREVIEW (Type: Content/Design) */}
+                <div className="hidden md:block p-6 border-b dark:border-slate-700 bg-white dark:bg-slate-900 flex-shrink-0">
+                    <h4 className="font-bold text-gray-500 text-xs uppercase mb-3 px-1">Live Preview</h4>
+                    <PostPreview item={activeMedia} design={formData.design} aspectRatio={formData.aspectRatio || 'square'} />
                 </div>
 
-                <div className="space-y-4 flex-grow overflow-y-auto pr-1 custom-scrollbar">
-                    {formData.media?.map((item, idx) => (
-                        <div key={idx} className="relative bg-white dark:bg-slate-900 p-2 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm group">
-                            <div className="absolute top-2 right-2 z-20">
-                                <button onClick={() => removeMedia(idx)} className="p-1.5 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition-colors" title="Remove">
-                                    <Trash2 size={14} />
-                                </button>
+                <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+                    <div className="flex items-center justify-between">
+                        <h4 className="font-bold text-gray-700 dark:text-gray-300">Media Gallery</h4>
+                        <button onClick={addMedia} className="text-xs font-bold text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-900/30 px-3 py-1.5 rounded-lg hover:bg-brand-100 transition-colors flex items-center gap-1">
+                            <Plus size={14} /> Add Media
+                        </button>
+                    </div>
+
+                    <div className="space-y-4 flex-grow overflow-y-auto pr-1 custom-scrollbar">
+                        {formData.media?.map((item, idx) => (
+                            <div key={idx} className="relative bg-white dark:bg-slate-900 p-2 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm group">
+                                <div className="absolute top-2 right-2 z-20">
+                                    <button onClick={() => removeMedia(idx)} className="p-1.5 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition-colors" title="Remove">
+                                        <Trash2 size={14} />
+                                    </button>
+                                </div>
+                                <span className="absolute top-2 left-2 z-20 text-[10px] font-bold bg-black/50 text-white px-2 py-0.5 rounded-full backdrop-blur-md">Item {idx + 1}</span>
+
+                                <MediaUploader
+                                    value={item.url}
+                                    mediaType={item.type as any}
+                                    onChange={(u) => updateMediaItem(idx, u)}
+                                    onMediaTypeChange={(t) => updateMediaItem(idx, item.url, t)}
+                                    aspectRatio={formData.aspectRatio}
+                                    onAspectRatioChange={idx === 0 ? r => setFormData({ ...formData, aspectRatio: r }) : undefined}
+                                    previewConfig={idx === 0 ? formData.design : undefined}
+                                    onUpdateDesign={idx === 0 ? handleDesignUpdate : undefined}
+                                    label=""
+                                />
                             </div>
-                            <span className="absolute top-2 left-2 z-20 text-[10px] font-bold bg-black/50 text-white px-2 py-0.5 rounded-full backdrop-blur-md">Item {idx + 1}</span>
+                        ))}
+                        {(!formData.media || formData.media.length === 0) && (
+                            <div className="text-center py-10 border-2 border-dashed border-gray-200 dark:border-slate-700 rounded-xl">
+                                <ImageIcon className="mx-auto text-gray-300 dark:text-gray-600 mb-2" size={32} />
+                                <p className="text-sm text-gray-400">No media added yet.</p>
+                                <button onClick={addMedia} className="mt-2 text-brand-600 font-bold text-sm hover:underline">Add First Image</button>
+                            </div>
+                        )}
+                    </div>
 
-                            <MediaUploader
-                                value={item.url}
-                                mediaType={item.type as any}
-                                onChange={(u) => updateMediaItem(idx, u)}
-                                onMediaTypeChange={(t) => updateMediaItem(idx, item.url, t)}
-                                aspectRatio={formData.aspectRatio}
-                                onAspectRatioChange={idx === 0 ? r => setFormData({ ...formData, aspectRatio: r }) : undefined}
-                                previewConfig={idx === 0 ? formData.design : undefined}
-                                onUpdateDesign={idx === 0 ? handleDesignUpdate : undefined}
-                                label=""
-                            />
-                        </div>
-                    ))}
-                    {(!formData.media || formData.media.length === 0) && (
-                        <div className="text-center py-10 border-2 border-dashed border-gray-200 dark:border-slate-700 rounded-xl">
-                            <ImageIcon className="mx-auto text-gray-300 dark:text-gray-600 mb-2" size={32} />
-                            <p className="text-sm text-gray-400">No media added yet.</p>
-                            <button onClick={addMedia} className="mt-2 text-brand-600 font-bold text-sm hover:underline">Add First Image</button>
-                        </div>
-                    )}
-                </div>
-
-                <div className="pt-4 border-t dark:border-slate-700 mt-auto space-y-3 flex-shrink-0">
-                    <button onClick={() => onSave({ ...formData, lastUpdated: new Date().toISOString() })} className="w-full py-4 text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all" style={{ backgroundColor: primaryColor }}>Save Post</button>
-                    <button onClick={onCancel} className="w-full py-4 bg-white dark:bg-slate-700 font-bold rounded-xl border dark:border-slate-600 text-gray-600 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-600 transition-colors">Cancel</button>
+                    <div className="pt-4 border-t dark:border-slate-700 mt-auto space-y-3 flex-shrink-0 sticky bottom-0 bg-gray-50 dark:bg-slate-800 pb-6 z-10 transition-all opacity-100">
+                        <button onClick={() => onSave({ ...formData, lastUpdated: new Date().toISOString() })} className="w-full py-4 text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all text-sm md:text-base" style={{ backgroundColor: primaryColor }}>Save Post</button>
+                        <button onClick={onCancel} className="w-full py-4 bg-white dark:bg-slate-700 font-bold rounded-xl border dark:border-slate-600 text-gray-600 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-600 transition-colors text-sm md:text-base">Cancel</button>
+                    </div>
                 </div>
             </div>
         </div>
