@@ -560,10 +560,12 @@ const parseNewsItem = (n: any) => ({
 
 // ─── News CRUD ──────────────────────────────────────────────────────
 app.post('/api/news', verifyAnyAuth, asyncHandler(async (req, res) => {
-    const { tags, design, media, mediaType, ...rest } = req.body;
+    const { title, content, date, author, tags, image, status, design, media, aspectRatio, views, likes } = req.body;
     const news = await prisma.news.create({
         data: {
-            ...rest,
+            title, content, date, author, image, status, aspectRatio,
+            views: views || 0,
+            likes: likes || 0,
             tags: JSON.stringify(tags || []),
             design: design ? JSON.stringify(design) : null,
             media: media ? JSON.stringify(media) : null,
@@ -573,8 +575,20 @@ app.post('/api/news', verifyAnyAuth, asyncHandler(async (req, res) => {
 }));
 
 app.put('/api/news/:id', verifyAnyAuth, asyncHandler(async (req, res) => {
-    const { tags, design, media, mediaType, ...rest } = req.body;
-    const data: any = { ...rest };
+    const { title, content, date, author, tags, image, status, design, media, aspectRatio, views, likes } = req.body;
+    const data: any = {};
+
+    // Explicitly check for undefined to allow partial updates (PATCH style logic, though route is PUT)
+    if (title !== undefined) data.title = title;
+    if (content !== undefined) data.content = content;
+    if (date !== undefined) data.date = date;
+    if (author !== undefined) data.author = author;
+    if (image !== undefined) data.image = image;
+    if (status !== undefined) data.status = status;
+    if (aspectRatio !== undefined) data.aspectRatio = aspectRatio;
+    if (views !== undefined) data.views = views;
+    if (likes !== undefined) data.likes = likes;
+
     if (tags !== undefined) data.tags = JSON.stringify(tags);
     if (design !== undefined) data.design = design ? JSON.stringify(design) : null;
     if (media !== undefined) data.media = media ? JSON.stringify(media) : null;
