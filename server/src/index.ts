@@ -20,6 +20,15 @@ const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
+// Ensure DATABASE_URL is set (SQLite fallback for Railway)
+if (!process.env.DATABASE_URL) {
+    const dbPath = path.resolve(__dirname, '../../data/csa.db');
+    const dbDir = path.dirname(dbPath);
+    if (!fs.existsSync(dbDir)) fs.mkdirSync(dbDir, { recursive: true });
+    process.env.DATABASE_URL = `file:${dbPath}`;
+    console.log(`📦 DATABASE_URL set to: ${process.env.DATABASE_URL}`);
+}
+
 const app = express();
 const prisma = new PrismaClient();
 const PORT = process.env.PORT || 3001;
