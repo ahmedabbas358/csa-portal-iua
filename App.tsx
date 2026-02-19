@@ -61,6 +61,13 @@ const App: React.FC = () => {
     // ─── UI State ───────────────────────────────────────────────────
     const [lang, setLang] = useState<Language>('ar');
     const [currentPage, setCurrentPage] = useState('home');
+
+    // Clear login input when switching pages to prevent state leakage
+    useEffect(() => {
+        setLoginInput('');
+        setLoginError('');
+    }, [currentPage]);
+
     const [isDarkMode, setIsDarkMode] = useState(false);
 
     // ─── Auth State ─────────────────────────────────────────────────
@@ -642,10 +649,16 @@ const App: React.FC = () => {
 
                                     <form onSubmit={handleDeanLogin} className="space-y-6">
                                         <div>
+                                            {/* Dummy hidden field to trick browser autofill */}
+                                            <input type="password" style={{ display: 'none' }} />
                                             <input
                                                 type="password"
+                                                name={`dean-key-${Math.random().toString(36).slice(2)}`}
                                                 value={loginInput}
                                                 onChange={(e) => setLoginInput(e.target.value)}
+                                                autoComplete="new-password"
+                                                readOnly={false}
+                                                autoFocus
                                                 className="w-full p-4 bg-slate-900 border border-slate-700 text-amber-400 font-mono text-sm rounded-xl focus:ring-2 focus:ring-amber-500 outline-none text-center tracking-widest"
                                                 placeholder="****************"
                                             />

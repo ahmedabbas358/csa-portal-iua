@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Menu, X, Globe, UserCircle, LogIn, Moon, Sun } from 'lucide-react';
 import { Language, AppSettings } from '../types';
 import { LABELS } from '../constants';
@@ -161,9 +162,9 @@ const Navbar: React.FC<NavbarProps> = ({ lang, setLang, currentPage, setPage, is
         </div>
       </div>
 
-      {/* Mobile menu */}
-      {isOpen && (
-        <div className="md:hidden fixed inset-0 z-[200] bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl animate-fade-in flex flex-col">
+      {/* Mobile menu using Portal to escape parent transform/z-index constraints */}
+      {isOpen && createPortal(
+        <div className="fixed inset-0 z-[9999] bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl animate-fade-in flex flex-col font-sans" dir={isRtl ? 'rtl' : 'ltr'}>
           <div className="p-6 flex justify-between items-center border-b border-gray-100 dark:border-slate-800">
             <h2 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">Menu</h2>
             <button onClick={() => setIsOpen(false)} className="p-2 bg-gray-100 dark:bg-slate-800 rounded-full text-gray-500 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-700 border border-gray-200 dark:border-slate-700"><X size={24} /></button>
@@ -228,7 +229,8 @@ const Navbar: React.FC<NavbarProps> = ({ lang, setLang, currentPage, setPage, is
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </nav>
   );
