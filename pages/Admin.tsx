@@ -1078,7 +1078,7 @@ const Admin: React.FC<AdminProps> = ({ lang, onLogout, onGoHome, onRefresh, stat
                     {activeTab === 'themes' && <ThemeManager settings={state.settings} onUpdateSettings={async (s: AppSettings) => { state.setSettings(s); try { await api.manage.updateSettings(s); if (onRefresh) await onRefresh(); } catch (e) { console.error('Theme save error:', e); } }} />}
                     {activeTab === 'settings' && <SettingsEditor settings={state.settings} onSave={async (s: AppSettings) => { state.setSettings(s); try { await api.manage.updateSettings(s); if (onRefresh) await onRefresh(); } catch (e: any) { alert('Settings save failed: ' + e.message); } }} timeline={state.timeline} onSaveTimeline={async (t: TimelineItem[]) => { state.setTimeline(t); try { for (const item of t) { if (item.id && !state.timeline.find(old => old.id === item.id)) { await api.manage.createTimeline(item); } } if (onRefresh) await onRefresh(); } catch (e: any) { alert('Timeline save failed: ' + e.message); } }} />}
                     {['news', 'events', 'team'].includes(activeTab) && (
-                        <div className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-sm border border-gray-100 dark:border-slate-800 flex flex-col h-auto md:h-[calc(100vh-160px)] md:overflow-hidden animate-fade-in">
+                        <div className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-sm border border-gray-100 dark:border-slate-800 flex flex-col h-auto animate-fade-in">
                             {viewMode === 'list' ? (
                                 <>
                                     <div className="p-4 md:p-6 border-b border-gray-100 dark:border-slate-800">
@@ -1161,14 +1161,14 @@ const Admin: React.FC<AdminProps> = ({ lang, onLogout, onGoHome, onRefresh, stat
                                     <PaginationControls current={currentPage} total={Math.ceil(filteredData.length / itemsPerPage)} onPageChange={setCurrentPage} />
                                 </>
                             ) : (
-                                <div className="flex-1 flex flex-col h-full">
+                                <div className="flex-1 flex flex-col min-h-full">
                                     <div className="p-4 border-b dark:border-slate-800 flex items-center gap-4">
                                         <button onClick={() => setViewMode('list')} className="p-2 bg-gray-100 dark:bg-slate-800 rounded-full hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors text-gray-600 dark:text-gray-300">
                                             {isRtl ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
                                         </button>
                                         <h3 className="text-lg font-bold text-gray-900 dark:text-white">{viewMode === 'create' ? (isRtl ? 'إضافة جديد' : 'Create New') : (isRtl ? 'تعديل العنصر' : 'Edit Item')}</h3>
                                     </div>
-                                    <div className="flex-1 overflow-y-auto md:overflow-hidden">{renderEditor()}</div>
+                                    <div className="flex-1">{renderEditor()}</div>
                                 </div>
                             )}
                         </div>
