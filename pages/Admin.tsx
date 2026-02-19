@@ -542,18 +542,18 @@ const NewsEditor = ({ item, onSave, onCancel, primaryColor }: { item?: NewsPost,
     const activeMedia = formData.media && formData.media.length > 0 ? formData.media[0] : (formData.image ? { url: formData.image, type: formData.mediaType } : null);
 
     return (
-        <div className="flex flex-col md:flex-row w-full h-full bg-white dark:bg-slate-900 text-gray-900 dark:text-white overflow-hidden">
+        <div className="flex flex-col md:flex-row w-full min-h-full bg-white dark:bg-slate-900 text-gray-900 dark:text-white">
             {/* MOBILE PREVIEW (Visible only on mobile) */}
             <div className="md:hidden bg-gray-50 dark:bg-slate-950 p-4 border-b dark:border-slate-800 flex-shrink-0">
                 <PostPreview item={activeMedia} design={formData.design} aspectRatio={formData.aspectRatio || 'square'} />
             </div>
 
-            <div className="flex-1 flex flex-col md:overflow-hidden h-full">
+            <div className="flex-1 flex flex-col">
                 <div className="flex border-b border-gray-100 dark:border-slate-700 flex-shrink-0">
                     <button onClick={() => setEditorTab('content')} className={`flex-1 py-4 text-sm font-bold flex items-center justify-center gap-2 border-b-2 transition-colors ${editorTab === 'content' ? 'text-brand-600 border-brand-600 bg-brand-50/50 dark:bg-brand-900/10' : 'text-gray-400 border-transparent'}`}><FileText size={18} /> Details</button>
                     <button onClick={() => setEditorTab('design')} className={`flex-1 py-4 text-sm font-bold flex items-center justify-center gap-2 border-b-2 transition-colors ${editorTab === 'design' ? 'text-brand-600 border-brand-600 bg-brand-50/50 dark:bg-brand-900/10' : 'text-gray-400 border-transparent'}`}><Crop size={18} /> Studio</button>
                 </div>
-                <div className="flex-1 p-4 md:p-6 space-y-4 md:overflow-y-auto pb-20 md:pb-4">
+                <div className="flex-1 p-4 md:p-6 space-y-4 pb-24 md:pb-6">
                     {editorTab === 'content' ? (
                         <div className="space-y-6">
                             {/* Title & Content */}
@@ -652,14 +652,14 @@ const NewsEditor = ({ item, onSave, onCancel, primaryColor }: { item?: NewsPost,
                     )}
                 </div>
             </div>
-            <div className="w-full md:w-[420px] bg-gray-50 dark:bg-slate-800 border-l border-gray-100 dark:border-slate-700 flex flex-col h-full overflow-hidden">
+            <div className="w-full md:w-[420px] bg-gray-50 dark:bg-slate-800 border-l border-gray-100 dark:border-slate-700 flex flex-col h-auto overflow-hidden">
                 {/* DESKTOP PREVIEW (Type: Content/Design) */}
                 <div className="hidden md:block p-6 border-b dark:border-slate-700 bg-white dark:bg-slate-900 flex-shrink-0">
                     <h4 className="font-bold text-gray-500 text-xs uppercase mb-3 px-1">Live Preview</h4>
                     <PostPreview item={activeMedia} design={formData.design} aspectRatio={formData.aspectRatio || 'square'} />
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+                <div className="p-6 space-y-6">
                     <div className="flex items-center justify-between">
                         <h4 className="font-bold text-gray-700 dark:text-gray-300">Media Gallery</h4>
                         <button onClick={addMedia} className="text-xs font-bold text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-900/30 px-3 py-1.5 rounded-lg hover:bg-brand-100 transition-colors flex items-center gap-1">
@@ -667,7 +667,7 @@ const NewsEditor = ({ item, onSave, onCancel, primaryColor }: { item?: NewsPost,
                         </button>
                     </div>
 
-                    <div className="space-y-4 flex-grow overflow-y-auto pr-1 custom-scrollbar">
+                    <div className="space-y-4">
                         {formData.media?.map((item, idx) => (
                             <div key={idx} className="relative bg-white dark:bg-slate-900 p-2 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm group">
                                 <div className="absolute top-2 right-2 z-20">
