@@ -471,15 +471,15 @@ const Events: React.FC<EventsProps> = ({ lang, events }) => {
                         </button>
                         <div className="bg-white dark:bg-slate-900 rounded-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl custom-scrollbar">
 
-                            <div className="relative h-64 md:h-[450px]">
-                                <img src={selectedEvent.image || `https://picsum.photos/800/600`} className="w-full h-full object-cover" onClick={() => setViewingImage(selectedEvent.image || '')} />
-                                <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent"></div>
-                                <div className="absolute bottom-0 left-0 p-6 md:p-12 text-white w-full">
+                            <div className="relative min-h-[16rem] md:min-h-[450px] flex flex-col justify-end rounded-t-3xl overflow-hidden">
+                                <img src={selectedEvent.image || `https://picsum.photos/800/600`} className="absolute inset-0 w-full h-full object-cover" onClick={() => setViewingImage(selectedEvent.image || '')} />
+                                <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent"></div>
+                                <div className="relative p-6 md:p-12 text-white w-full z-10 pt-24 md:pt-32">
                                     <div className="flex items-center gap-3 mb-4">
                                         <span className="px-3 py-1 bg-brand-600 rounded-lg text-sm font-bold shadow-sm">{selectedEvent.type}</span>
                                         {selectedEvent.isOnline && <span className="px-3 py-1 bg-red-600 rounded-lg text-sm font-bold shadow-sm flex items-center gap-2"><Wifi size={14} /> Online Event</span>}
                                     </div>
-                                    <h2 className="text-2xl md:text-5xl font-black leading-tight">{lang === 'ar' ? selectedEvent.titleAr : selectedEvent.title}</h2>
+                                    <h2 className="text-2xl md:text-5xl font-black leading-tight break-words">{lang === 'ar' ? selectedEvent.titleAr : selectedEvent.title}</h2>
                                 </div>
                             </div>
 
