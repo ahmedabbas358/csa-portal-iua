@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { MapPin, Clock, ArrowRight, Filter, X, Calendar as CalendarIcon, ExternalLink, Ticket, Share2, CheckCircle, ChevronLeft, ChevronRight, Sparkles, MonitorPlay, Wifi, Globe, CalendarPlus, ZoomIn, ZoomOut, Move, Download, Video } from 'lucide-react';
 import { Language, EventItem } from '../types';
 
@@ -63,7 +64,7 @@ const ImageViewer = ({ src, alt, onClose }: { src: string, alt: string, onClose:
         e.currentTarget.releasePointerCapture(e.pointerId);
     };
 
-    return (
+    return createPortal(
         <div className="fixed inset-0 z-[200] bg-black flex items-center justify-center overflow-hidden animate-fade-in touch-none">
             <div className="absolute top-4 right-4 z-50 flex gap-4">
                 <button onClick={downloadMedia} className="p-3 bg-white/10 rounded-full text-white hover:bg-white/20 backdrop-blur-md transition-colors" title="Download High Quality">
@@ -95,7 +96,8 @@ const ImageViewer = ({ src, alt, onClose }: { src: string, alt: string, onClose:
                     draggable={false}
                 />
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };
 
@@ -463,7 +465,7 @@ const Events: React.FC<EventsProps> = ({ lang, events }) => {
             </div>
 
             {/* MODAL */}
-            {selectedEvent && (
+            {selectedEvent && createPortal(
                 <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in" onClick={closeModal}>
                     <div className="w-full max-w-4xl relative animate-slide-up" onClick={e => e.stopPropagation()}>
                         <button onClick={closeModal} className="fixed top-4 right-4 md:absolute md:-top-12 md:-right-12 z-[70] p-2 md:p-3 text-white bg-black/40 md:bg-white/10 border md:border-none border-white/20 hover:text-white hover:bg-black/60 md:hover:bg-white/20 rounded-full transition-all backdrop-blur-md shadow-lg">
@@ -542,7 +544,8 @@ const Events: React.FC<EventsProps> = ({ lang, events }) => {
                             </div>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     );

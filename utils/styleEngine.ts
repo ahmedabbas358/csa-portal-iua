@@ -39,8 +39,8 @@ export const getPatternStyle = (pattern: string, color: string, isDark: boolean)
     // Tripled base opacity for SVGs since soft-light blend mode was removed
     const fill = getColor(isDark, 0.15);
     const stroke = getColor(isDark, 0.15);
-    const fillOpacity = isDark ? '0.08' : '0.04';
-    const strokeOpacity = isDark ? '0.1' : '0.08';
+    const fillOpacity = isDark ? '0.20' : '0.12';
+    const strokeOpacity = isDark ? '0.25' : '0.15';
 
     // Gradient patterns use the RGBA string directly passed in `color` variable
     const c = color;

@@ -20,7 +20,7 @@ import { api, getDeanToken, getAdminToken, clearDeanToken, clearAdminToken } fro
 // --- PATTERN HELPER ---
 const getPatternStyle = (pattern?: string, isDark?: boolean): React.CSSProperties => {
     // Solid base colors with 30-40% opacity handled in styleEngine
-    const color = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+    const color = isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)';
     return getEnginePattern(pattern || 'none', color, isDark || false);
 };
 
