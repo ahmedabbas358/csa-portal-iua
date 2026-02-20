@@ -115,14 +115,14 @@ const Navbar: React.FC<NavbarProps> = ({ lang, setLang, currentPage, setPage, is
             {/* Dark Mode Toggle */}
             <button
               onClick={() => setIsDarkMode(!isDarkMode)}
-              className={`flex items-center justify-center w-10 h-10 rounded-full transition-all backdrop-blur-md border ${glassButtonStyle}`}
+              className={`hidden md:flex items-center justify-center w-10 h-10 rounded-full transition-all backdrop-blur-md border ${glassButtonStyle}`}
             >
               {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
             </button>
 
             <button
               onClick={toggleLang}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all text-xs font-bold border backdrop-blur-md ${glassButtonStyle}`}
+              className={`hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all text-xs font-bold border backdrop-blur-md ${glassButtonStyle}`}
             >
               <Globe size={14} />
               <span>{lang === 'en' ? 'عربي' : 'EN'}</span>

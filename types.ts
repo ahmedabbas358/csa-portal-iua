@@ -69,6 +69,7 @@ export interface PostDesignConfig {
 export interface MediaItem {
   type: 'image' | 'video';
   url: string;
+  design?: PostDesignConfig; // Per-item design overrides (pan, zoom, filters)
 }
 
 export interface NewsPost {

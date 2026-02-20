@@ -115,7 +115,7 @@ const EventCard = ({ event, lang, onClick, isRtl }: { event: EventItem, lang: La
     return (
         <div
             onClick={onClick}
-            className="group bg-white dark:bg-slate-800 rounded-[2rem] overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-gray-100 dark:border-slate-700 flex flex-col h-full cursor-pointer relative"
+            className="group bg-white dark:bg-slate-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-gray-100 dark:border-slate-700 flex flex-col h-full cursor-pointer relative"
         >
             {/* Image Section */}
             <div className="h-60 relative overflow-hidden bg-gray-100 dark:bg-slate-700">
@@ -357,7 +357,7 @@ const Events: React.FC<EventsProps> = ({ lang, events }) => {
                 {/* Featured Event */}
                 {featuredEvent && activeTab === 'upcoming' && (
                     <div className="mb-16 animate-fade-in">
-                        <div className="relative rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-2xl bg-gray-900 dark:bg-slate-950 text-white min-h-[500px] flex items-end md:items-center group cursor-pointer transform hover:scale-[1.01] transition-all duration-500" onClick={() => openModal(featuredEvent)}>
+                        <div className="relative rounded-3xl overflow-hidden shadow-2xl bg-gray-900 dark:bg-slate-950 text-white min-h-[500px] flex items-end md:items-center group cursor-pointer transform hover:scale-[1.01] transition-all duration-500" onClick={() => openModal(featuredEvent)}>
                             <div className="absolute inset-0">
                                 <img
                                     src={featuredEvent.image || `https://picsum.photos/1200/600`}
@@ -465,78 +465,80 @@ const Events: React.FC<EventsProps> = ({ lang, events }) => {
             {/* MODAL */}
             {selectedEvent && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in" onClick={closeModal}>
-                    <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl relative custom-scrollbar animate-slide-up" onClick={e => e.stopPropagation()}>
-                        <button onClick={closeModal} className="absolute top-6 right-6 z-20 p-3 bg-white/20 backdrop-blur-md text-white rounded-full hover:bg-white/30 transition-colors">
-                            <X size={20} />
+                    <div className="w-full max-w-4xl relative animate-slide-up" onClick={e => e.stopPropagation()}>
+                        <button onClick={closeModal} className="absolute -top-12 right-0 md:bg-white/10 md:-right-12 z-[70] p-3 text-white/80 hover:text-white hover:bg-white/20 rounded-full transition-colors backdrop-blur-md">
+                            <X size={24} />
                         </button>
+                        <div className="bg-white dark:bg-slate-900 rounded-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl custom-scrollbar">
 
-                        <div className="relative h-64 md:h-[450px]">
-                            <img src={selectedEvent.image || `https://picsum.photos/800/600`} className="w-full h-full object-cover" onClick={() => setViewingImage(selectedEvent.image || '')} />
-                            <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent"></div>
-                            <div className="absolute bottom-0 left-0 p-6 md:p-12 text-white w-full">
-                                <div className="flex items-center gap-3 mb-4">
-                                    <span className="px-3 py-1 bg-brand-600 rounded-lg text-sm font-bold shadow-sm">{selectedEvent.type}</span>
-                                    {selectedEvent.isOnline && <span className="px-3 py-1 bg-red-600 rounded-lg text-sm font-bold shadow-sm flex items-center gap-2"><Wifi size={14} /> Online Event</span>}
-                                </div>
-                                <h2 className="text-2xl md:text-5xl font-black leading-tight">{lang === 'ar' ? selectedEvent.titleAr : selectedEvent.title}</h2>
-                            </div>
-                        </div>
-
-                        <div className="p-6 md:p-12 grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-12">
-                            <div className="lg:col-span-2 space-y-8">
-                                <div>
-                                    <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                                        <Sparkles size={20} className="text-brand-500" />
-                                        {isRtl ? 'عن الفعالية' : 'About Event'}
-                                    </h4>
-                                    <p className="text-gray-600 dark:text-gray-300 leading-loose text-lg whitespace-pre-line">
-                                        {lang === 'ar' ? selectedEvent.descriptionAr : selectedEvent.description}
-                                    </p>
+                            <div className="relative h-64 md:h-[450px]">
+                                <img src={selectedEvent.image || `https://picsum.photos/800/600`} className="w-full h-full object-cover" onClick={() => setViewingImage(selectedEvent.image || '')} />
+                                <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent"></div>
+                                <div className="absolute bottom-0 left-0 p-6 md:p-12 text-white w-full">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <span className="px-3 py-1 bg-brand-600 rounded-lg text-sm font-bold shadow-sm">{selectedEvent.type}</span>
+                                        {selectedEvent.isOnline && <span className="px-3 py-1 bg-red-600 rounded-lg text-sm font-bold shadow-sm flex items-center gap-2"><Wifi size={14} /> Online Event</span>}
+                                    </div>
+                                    <h2 className="text-2xl md:text-5xl font-black leading-tight">{lang === 'ar' ? selectedEvent.titleAr : selectedEvent.title}</h2>
                                 </div>
                             </div>
 
-                            <div className="space-y-6">
-                                <div className="bg-gray-50 dark:bg-slate-800 rounded-3xl p-6 border border-gray-100 dark:border-slate-700 space-y-6">
-                                    <div className="flex gap-4">
-                                        <div className="p-3 bg-white dark:bg-slate-700 rounded-xl text-brand-600 dark:text-brand-400 shadow-sm"><CalendarIcon size={24} /></div>
-                                        <div>
-                                            <span className="block text-xs font-bold text-gray-400 uppercase mb-1">{isRtl ? 'التاريخ' : 'Date'}</span>
-                                            <span className="block font-bold text-gray-900 dark:text-white text-lg">{selectedEvent.date}</span>
-                                        </div>
-                                    </div>
-                                    <div className="flex gap-4">
-                                        <div className="p-3 bg-white dark:bg-slate-700 rounded-xl text-brand-600 dark:text-brand-400 shadow-sm"><Clock size={24} /></div>
-                                        <div>
-                                            <span className="block text-xs font-bold text-gray-400 uppercase mb-1">{isRtl ? 'الوقت' : 'Time'}</span>
-                                            <span className="block font-bold text-gray-900 dark:text-white text-lg">{selectedEvent.time}</span>
-                                        </div>
-                                    </div>
-                                    <div className="flex gap-4">
-                                        <div className="p-3 bg-white dark:bg-slate-700 rounded-xl text-brand-600 dark:text-brand-400 shadow-sm">
-                                            {selectedEvent.isOnline ? <Video size={24} /> : <MapPin size={24} />}
-                                        </div>
-                                        <div>
-                                            <span className="block text-xs font-bold text-gray-400 uppercase mb-1">{isRtl ? 'الموقع' : 'Location'}</span>
-                                            <span className="block font-bold text-gray-900 dark:text-white text-lg leading-tight">
-                                                {selectedEvent.isOnline ? (isRtl ? 'أونلاين' : 'Online') : (lang === 'ar' ? selectedEvent.locationAr : selectedEvent.location)}
-                                            </span>
-                                        </div>
+                            <div className="p-6 md:p-12 grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-12">
+                                <div className="lg:col-span-2 space-y-8">
+                                    <div>
+                                        <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                                            <Sparkles size={20} className="text-brand-500" />
+                                            {isRtl ? 'عن الفعالية' : 'About Event'}
+                                        </h4>
+                                        <p className="text-gray-600 dark:text-gray-300 leading-loose text-lg whitespace-pre-line">
+                                            {lang === 'ar' ? selectedEvent.descriptionAr : selectedEvent.description}
+                                        </p>
                                     </div>
                                 </div>
 
-                                {selectedEvent.isOnline && selectedEvent.meetingLink && (
-                                    <a href={selectedEvent.meetingLink} target="_blank" className="block w-full py-4 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-center shadow-lg transition-all flex items-center justify-center gap-2">
-                                        <MonitorPlay size={20} />
-                                        {isRtl ? 'الانضمام للاجتماع' : 'Join Meeting'}
-                                    </a>
-                                )}
+                                <div className="space-y-6">
+                                    <div className="bg-gray-50 dark:bg-slate-800 rounded-3xl p-6 border border-gray-100 dark:border-slate-700 space-y-6">
+                                        <div className="flex gap-4">
+                                            <div className="p-3 bg-white dark:bg-slate-700 rounded-xl text-brand-600 dark:text-brand-400 shadow-sm"><CalendarIcon size={24} /></div>
+                                            <div>
+                                                <span className="block text-xs font-bold text-gray-400 uppercase mb-1">{isRtl ? 'التاريخ' : 'Date'}</span>
+                                                <span className="block font-bold text-gray-900 dark:text-white text-lg">{selectedEvent.date}</span>
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-4">
+                                            <div className="p-3 bg-white dark:bg-slate-700 rounded-xl text-brand-600 dark:text-brand-400 shadow-sm"><Clock size={24} /></div>
+                                            <div>
+                                                <span className="block text-xs font-bold text-gray-400 uppercase mb-1">{isRtl ? 'الوقت' : 'Time'}</span>
+                                                <span className="block font-bold text-gray-900 dark:text-white text-lg">{selectedEvent.time}</span>
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-4">
+                                            <div className="p-3 bg-white dark:bg-slate-700 rounded-xl text-brand-600 dark:text-brand-400 shadow-sm">
+                                                {selectedEvent.isOnline ? <Video size={24} /> : <MapPin size={24} />}
+                                            </div>
+                                            <div>
+                                                <span className="block text-xs font-bold text-gray-400 uppercase mb-1">{isRtl ? 'الموقع' : 'Location'}</span>
+                                                <span className="block font-bold text-gray-900 dark:text-white text-lg leading-tight">
+                                                    {selectedEvent.isOnline ? (isRtl ? 'أونلاين' : 'Online') : (lang === 'ar' ? selectedEvent.locationAr : selectedEvent.location)}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
 
-                                {!selectedEvent.isCompleted && (
-                                    <button onClick={() => handleAddToCalendar(selectedEvent)} className="w-full py-4 rounded-xl bg-white dark:bg-slate-800 border-2 border-gray-100 dark:border-slate-700 text-gray-700 dark:text-white font-bold hover:border-brand-500 hover:text-brand-600 dark:hover:text-brand-400 transition-all flex items-center justify-center gap-2">
-                                        <CalendarPlus size={20} />
-                                        {isRtl ? 'إضافة للتقويم' : 'Add to Calendar'}
-                                    </button>
-                                )}
+                                    {selectedEvent.isOnline && selectedEvent.meetingLink && (
+                                        <a href={selectedEvent.meetingLink} target="_blank" className="block w-full py-4 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-center shadow-lg transition-all flex items-center justify-center gap-2">
+                                            <MonitorPlay size={20} />
+                                            {isRtl ? 'الانضمام للاجتماع' : 'Join Meeting'}
+                                        </a>
+                                    )}
+
+                                    {!selectedEvent.isCompleted && (
+                                        <button onClick={() => handleAddToCalendar(selectedEvent)} className="w-full py-4 rounded-xl bg-white dark:bg-slate-800 border-2 border-gray-100 dark:border-slate-700 text-gray-700 dark:text-white font-bold hover:border-brand-500 hover:text-brand-600 dark:hover:text-brand-400 transition-all flex items-center justify-center gap-2">
+                                            <CalendarPlus size={20} />
+                                            {isRtl ? 'إضافة للتقويم' : 'Add to Calendar'}
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -638,6 +638,22 @@ app.delete('/api/news/:id', verifyAnyAuth, asyncHandler(async (req, res) => {
     res.json({ success: true });
 }));
 
+// ─── Reaction Sync ──────────────────────────────────────────────────
+app.post('/api/news/:id/like', asyncHandler(async (req, res) => {
+    const { action } = req.body;
+    const newsItem = await prisma.news.findUnique({ where: { id: req.params.id } });
+    if (!newsItem) return res.status(404).json({ error: 'News not found' });
+
+    const updated = await prisma.news.update({
+        where: { id: req.params.id },
+        data: {
+            likes: action === 'unlike' ? { decrement: 1 } : { increment: 1 }
+        }
+    });
+
+    res.json({ success: true, likes: updated.likes });
+}));
+
 // ─── Timeline CRUD ──────────────────────────────────────────────────
 app.post('/api/timeline', verifyAnyAuth, asyncHandler(async (req, res) => {
     const { year, titleAr, titleEn, descAr, descEn, icon } = req.body;
@@ -799,7 +815,7 @@ app.post('/api/upload', verifyAnyAuth, upload.single('file'), (req: Request, res
         return res.status(400).json({ error: 'No file provided' });
     }
     // Build public URL
-    const protocol = req.protocol;
+    const protocol = req.headers['x-forwarded-proto'] || req.protocol;
     const host = req.get('host') || 'localhost:3001';
     const url = `${protocol}://${host}/uploads/${req.file.filename}`;
     res.json({

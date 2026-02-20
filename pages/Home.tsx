@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { ArrowRight, Calendar, Users, Award, Eye, Share2, Search, PlayCircle, CheckCircle, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Tag, X, MousePointer, Copy, Facebook, Twitter, Linkedin, MessageCircle, Mail, Send, Link as LinkIcon, Instagram, MoreHorizontal, ZoomIn, ZoomOut, Move, Download, Heart } from 'lucide-react';
 import { Language, NewsPost, AppSettings, MediaItem } from '../types';
+import { api } from '../services/api';
 
 interface HomeProps {
     lang: Language;
@@ -224,7 +225,7 @@ const NewsCard: React.FC<NewsCardProps> = ({ post, isRtl, onExpand, isExpanded, 
     };
 
     return (
-        <div data-id={post.id} className="news-card bg-white dark:bg-slate-800 rounded-[1.5rem] md:rounded-[2rem] overflow-hidden shadow-sm border border-gray-100 dark:border-slate-700 hover:shadow-xl transition-all duration-300">
+        <div data-id={post.id} className="news-card bg-white dark:bg-slate-800 rounded-3xl overflow-hidden shadow-sm border border-gray-100 dark:border-slate-700 hover:shadow-xl transition-all duration-300">
             {/* Header */}
             <div className="p-4 md:p-5 flex items-center gap-3 md:gap-4">
                 <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-tr from-brand-500 to-indigo-600 p-[2px] flex-shrink-0">
@@ -284,9 +285,9 @@ const NewsCard: React.FC<NewsCardProps> = ({ post, isRtl, onExpand, isExpanded, 
                                     playsInline
                                     preload="metadata"
                                     style={{
-                                        objectPosition: `${post.design?.imagePosition?.x || 50}% ${post.design?.imagePosition?.y || 50}%`,
-                                        transform: `scale(${post.design?.imagePosition?.scale || 1})`,
-                                        filter: `brightness(${post.design?.filters?.brightness || 100}%) contrast(${post.design?.filters?.contrast || 100}%) saturate(${post.design?.filters?.saturate || 100}%)`
+                                        objectPosition: `${(item.design?.imagePosition?.x ?? post.design?.imagePosition?.x) ?? 50}% ${(item.design?.imagePosition?.y ?? post.design?.imagePosition?.y) ?? 50}%`,
+                                        transform: `scale(${(item.design?.imagePosition?.scale ?? post.design?.imagePosition?.scale) ?? 1})`,
+                                        filter: `brightness(${(item.design?.filters?.brightness ?? post.design?.filters?.brightness) ?? 100}%) contrast(${(item.design?.filters?.contrast ?? post.design?.filters?.contrast) ?? 100}%) saturate(${(item.design?.filters?.saturate ?? post.design?.filters?.saturate) ?? 100}%) grayscale(${(item.design?.filters?.grayscale ?? post.design?.filters?.grayscale) ?? 0}%)`
                                     }}
                                 />
                             ) : (
@@ -296,9 +297,9 @@ const NewsCard: React.FC<NewsCardProps> = ({ post, isRtl, onExpand, isExpanded, 
                                     className="w-full h-full object-cover cursor-zoom-in"
                                     onClick={(e) => handleImageClick(e, item.url)}
                                     style={{
-                                        objectPosition: `${post.design?.imagePosition?.x || 50}% ${post.design?.imagePosition?.y || 50}%`,
-                                        transform: `scale(${post.design?.imagePosition?.scale || 1})`,
-                                        filter: `brightness(${post.design?.filters?.brightness || 100}%) contrast(${post.design?.filters?.contrast || 100}%) saturate(${post.design?.filters?.saturate || 100}%)`
+                                        objectPosition: `${(item.design?.imagePosition?.x ?? post.design?.imagePosition?.x) ?? 50}% ${(item.design?.imagePosition?.y ?? post.design?.imagePosition?.y) ?? 50}%`,
+                                        transform: `scale(${(item.design?.imagePosition?.scale ?? post.design?.imagePosition?.scale) ?? 1})`,
+                                        filter: `brightness(${(item.design?.filters?.brightness ?? post.design?.filters?.brightness) ?? 100}%) contrast(${(item.design?.filters?.contrast ?? post.design?.filters?.contrast) ?? 100}%) saturate(${(item.design?.filters?.saturate ?? post.design?.filters?.saturate) ?? 100}%) grayscale(${(item.design?.filters?.grayscale ?? post.design?.filters?.grayscale) ?? 0}%)`
                                     }}
                                 />
                             )}
@@ -488,6 +489,7 @@ const Home: React.FC<HomeProps> = ({ lang, news, setNews, setPage, settings }) =
             setNews(prev => prev.map(p =>
                 p.id === id ? { ...p, likes: Math.max(0, (p.likes || 0) - 1) } : p
             ));
+            api.likeNews(id, 'unlike').catch(err => console.error('Failed to unlike:', err));
         } else {
             // Like
             setLikedPosts(prev => {
@@ -498,6 +500,7 @@ const Home: React.FC<HomeProps> = ({ lang, news, setNews, setPage, settings }) =
             setNews(prev => prev.map(p =>
                 p.id === id ? { ...p, likes: (p.likes || 0) + 1 } : p
             ));
+            api.likeNews(id, 'like').catch(err => console.error('Failed to like:', err));
         }
     };
 

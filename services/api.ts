@@ -58,6 +58,7 @@ export const api = {
 
     // ─── News ───────────────────────────────────────────────────────
     getNews: () => apiFetch<any[]>('/api/news'),
+    likeNews: (id: string, action: 'like' | 'unlike') => apiFetch<{ success: boolean; likes: number }>(`/api/news/${id}/like`, { method: 'POST', body: JSON.stringify({ action }) }),
 
     // ─── Timeline ───────────────────────────────────────────────────
     getTimeline: () => apiFetch<any[]>('/api/timeline'),

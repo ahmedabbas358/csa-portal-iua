@@ -361,7 +361,7 @@ const App: React.FC = () => {
             `;
         } else if (currentRadius === 'prominent') {
             extraCSS = `
-                .rounded-xl, .rounded-2xl, .rounded-lg, .rounded-md, .rounded-sm, .rounded {
+                .rounded-3xl, .rounded-2xl, .rounded-xl, .rounded-lg, .rounded-md, .rounded-sm, .rounded {
                     border: 2px solid ${isDarkMode ? '#334155' : '#e2e8f0'} !important;
                     box-shadow: 4px 4px 0px 0px ${isDarkMode ? '#1e293b' : '#cbd5e1'} !important;
                 }
@@ -382,7 +382,7 @@ const App: React.FC = () => {
             body {
                 font-family: var(--font-primary) !important;
             }
-            .rounded-xl, .rounded-2xl, .rounded-lg, .rounded-md, .rounded-sm, .rounded {
+            .rounded-3xl, .rounded-2xl, .rounded-xl, .rounded-lg, .rounded-md, .rounded-sm, .rounded {
                 border-radius: var(--radius-base) !important;
             }
             .transition-all, .transition-colors, .transition-opacity, .transition-transform {
