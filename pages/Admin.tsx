@@ -683,95 +683,88 @@ const NewsEditor = ({ item, onSave, onCancel, primaryColor }: { item?: NewsPost,
                                                 <input type="range" min="0" max="100" value={formData.media?.[activeMediaIndex]?.design?.filters?.grayscale ?? 0} onChange={e => updateDesign('filters', 'grayscale', parseInt(e.target.value))} className="w-full h-1.5 bg-gray-200 rounded-lg cursor-pointer dark:bg-gray-700 accent-gray-500" />
                                             </div>
                                         </div>
-                                        <input type="range" min="0" max="200" value={formData.design?.filters?.saturate} onChange={e => updateDesign('filters', 'saturate', parseInt(e.target.value))} className="w-full h-1.5 bg-gray-200 rounded-lg cursor-pointer dark:bg-gray-700 accent-gray-500" />
-                                    </div>
-                                    <div>
-                                        <div className="flex justify-between mb-1"><label className="text-[10px] font-bold text-gray-400">B&W</label></div>
-                                        <input type="range" min="0" max="100" value={formData.design?.filters?.grayscale} onChange={e => updateDesign('filters', 'grayscale', parseInt(e.target.value))} className="w-full h-1.5 bg-gray-200 rounded-lg cursor-pointer dark:bg-gray-700 accent-gray-500" />
                                     </div>
                                 </div>
                             </div>
                         </div>
-                            </div>
-            </div>
                     )}
-        </div>
+                </div>
             </div >
-    <div className="w-full md:w-[340px] xl:w-[420px] bg-gray-50 dark:bg-slate-800 border-l border-gray-100 dark:border-slate-700 flex flex-col h-auto overflow-visible pb-32 md:pb-0">
-        {/* DESKTOP PREVIEW (Type: Content/Design) */}
-        <div className="hidden md:block p-6 border-b dark:border-slate-700 bg-white dark:bg-slate-900 flex-shrink-0">
-            <h4 className="font-bold text-gray-500 text-xs uppercase mb-3 px-1">Live Preview ({activeMediaIndex + 1}/{formData.media?.length})</h4>
-            <PostPreview
-                item={formData.media?.[activeMediaIndex]}
-                design={{ ...formData.design!, ...(formData.media?.[activeMediaIndex]?.design || {}) }}
-                aspectRatio={formData.aspectRatio || 'square'}
-            />
-        </div>
+            <div className="w-full md:w-[340px] xl:w-[420px] bg-gray-50 dark:bg-slate-800 border-l border-gray-100 dark:border-slate-700 flex flex-col h-auto overflow-visible pb-32 md:pb-0">
+                {/* DESKTOP PREVIEW (Type: Content/Design) */}
+                <div className="hidden md:block p-6 border-b dark:border-slate-700 bg-white dark:bg-slate-900 flex-shrink-0">
+                    <h4 className="font-bold text-gray-500 text-xs uppercase mb-3 px-1">Live Preview ({activeMediaIndex + 1}/{formData.media?.length})</h4>
+                    <PostPreview
+                        item={formData.media?.[activeMediaIndex]}
+                        design={{ ...formData.design!, ...(formData.media?.[activeMediaIndex]?.design || {}) }}
+                        aspectRatio={formData.aspectRatio || 'square'}
+                    />
+                </div>
 
-        <div className="p-6 space-y-6">
-            <div className="flex items-center justify-between">
-                <h4 className="font-bold text-gray-700 dark:text-gray-300">Media Gallery</h4>
-                <button onClick={() => {
-                    const newMediaItem: any = {
-                        type: 'image',
-                        url: '',
-                        design: { fontStyle: 'modern', textColor: '#ffffff', textAlignment: 'center', overlayText: '', overlayOpacity: 30, imagePosition: { x: 50, y: 50, scale: 1 }, filters: { brightness: 100, contrast: 100, saturate: 100, grayscale: 0, sepia: 0 } }
-                    };
-                    setFormData(prev => ({ ...prev, media: [...(prev.media || []), newMediaItem] }));
-                    setActiveMediaIndex((formData.media?.length || 0));
-                }} className="text-xs font-bold text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-900/30 px-3 py-1.5 rounded-lg hover:bg-brand-100 transition-colors flex items-center gap-1">
-                    <Plus size={14} /> Add Media
-                </button>
-            </div>
-
-            <div className="space-y-4">
-                {formData.media?.map((item, idx) => (
-                    <div key={idx} className={`relative bg-white dark:bg-slate-900 p-2 rounded-xl border shadow-sm group ${activeMediaIndex === idx ? 'border-brand-500' : 'border-gray-200 dark:border-slate-700'}`}>
-                        <div className="absolute top-2 right-2 z-20">
-                            <button onClick={() => removeMedia(idx)} className="p-1.5 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition-colors" title="Remove">
-                                <Trash2 size={14} />
-                            </button>
-                        </div>
-                        <span className={`absolute top-2 left-2 z-20 text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-md cursor-pointer ${activeMediaIndex === idx ? 'bg-brand-500 text-white' : 'bg-black/50 text-white'}`} onClick={() => setActiveMediaIndex(idx)}>
-                            Item {idx + 1} {activeMediaIndex === idx && '(Editing)'}
-                        </span>
-
-                        <div onClick={() => setActiveMediaIndex(idx)} className={`transition-all ${activeMediaIndex === idx ? 'ring-2 ring-brand-500 rounded-lg' : ''}`}>
-                            <MediaUploader
-                                value={item.url}
-                                mediaType={item.type as any}
-                                onChange={(u) => updateMediaItem(idx, u)}
-                                onMediaTypeChange={(t) => updateMediaItem(idx, item.url, t)}
-                                aspectRatio={formData.aspectRatio}
-                                onAspectRatioChange={idx === 0 ? r => setFormData({ ...formData, aspectRatio: r }) : undefined}
-                                previewConfig={item.design || formData.design}
-                                onUpdateDesign={(updates) => handleMediaDesignUpdate(idx, updates)}
-                                label=""
-                            />
-                        </div>
+                <div className="p-6 space-y-6">
+                    <div className="flex items-center justify-between">
+                        <h4 className="font-bold text-gray-700 dark:text-gray-300">Media Gallery</h4>
+                        <button onClick={() => {
+                            const newMediaItem: any = {
+                                type: 'image',
+                                url: '',
+                                design: { fontStyle: 'modern', textColor: '#ffffff', textAlignment: 'center', overlayText: '', overlayOpacity: 30, imagePosition: { x: 50, y: 50, scale: 1 }, filters: { brightness: 100, contrast: 100, saturate: 100, grayscale: 0, sepia: 0 } }
+                            };
+                            setFormData(prev => ({ ...prev, media: [...(prev.media || []), newMediaItem] }));
+                            setActiveMediaIndex((formData.media?.length || 0));
+                        }} className="text-xs font-bold text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-900/30 px-3 py-1.5 rounded-lg hover:bg-brand-100 transition-colors flex items-center gap-1">
+                            <Plus size={14} /> Add Media
+                        </button>
                     </div>
-                ))}
-                {(!formData.media || formData.media.length === 0) && (
-                    <div className="text-center py-10 border-2 border-dashed border-gray-200 dark:border-slate-700 rounded-xl">
-                        <ImageIcon className="mx-auto text-gray-300 dark:text-gray-600 mb-2" size={32} />
-                        <p className="text-sm text-gray-400">No media added yet.</p>
-                        <button onClick={addMedia} className="mt-2 text-brand-600 font-bold text-sm hover:underline">Add First Image</button>
+
+                    <div className="space-y-4">
+                        {formData.media?.map((item, idx) => (
+                            <div key={idx} className={`relative bg-white dark:bg-slate-900 p-2 rounded-xl border shadow-sm group ${activeMediaIndex === idx ? 'border-brand-500' : 'border-gray-200 dark:border-slate-700'}`}>
+                                <div className="absolute top-2 right-2 z-20">
+                                    <button onClick={() => removeMedia(idx)} className="p-1.5 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition-colors" title="Remove">
+                                        <Trash2 size={14} />
+                                    </button>
+                                </div>
+                                <span className={`absolute top-2 left-2 z-20 text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-md cursor-pointer ${activeMediaIndex === idx ? 'bg-brand-500 text-white' : 'bg-black/50 text-white'}`} onClick={() => setActiveMediaIndex(idx)}>
+                                    Item {idx + 1} {activeMediaIndex === idx && '(Editing)'}
+                                </span>
+
+                                <div onClick={() => setActiveMediaIndex(idx)} className={`transition-all ${activeMediaIndex === idx ? 'ring-2 ring-brand-500 rounded-lg' : ''}`}>
+                                    <MediaUploader
+                                        value={item.url}
+                                        mediaType={item.type as any}
+                                        onChange={(u) => updateMediaItem(idx, u)}
+                                        onMediaTypeChange={(t) => updateMediaItem(idx, item.url, t)}
+                                        aspectRatio={formData.aspectRatio}
+                                        onAspectRatioChange={idx === 0 ? r => setFormData({ ...formData, aspectRatio: r }) : undefined}
+                                        previewConfig={item.design || formData.design}
+                                        onUpdateDesign={(updates) => handleMediaDesignUpdate(idx, updates)}
+                                        label=""
+                                    />
+                                </div>
+                            </div>
+                        ))}
+                        {(!formData.media || formData.media.length === 0) && (
+                            <div className="text-center py-10 border-2 border-dashed border-gray-200 dark:border-slate-700 rounded-xl">
+                                <ImageIcon className="mx-auto text-gray-300 dark:text-gray-600 mb-2" size={32} />
+                                <p className="text-sm text-gray-400">No media added yet.</p>
+                                <button onClick={addMedia} className="mt-2 text-brand-600 font-bold text-sm hover:underline">Add First Image</button>
+                            </div>
+                        )}
                     </div>
-                )}
+
+                    <div className="hidden md:block pt-4 border-t dark:border-slate-700 mt-auto space-y-3 flex-shrink-0 sticky bottom-0 bg-gray-50 dark:bg-slate-800 pb-6 z-10 transition-all opacity-100">
+                        <button onClick={() => onSave({ ...formData, lastUpdated: new Date().toISOString() })} className="w-full py-4 text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all text-sm md:text-base" style={{ backgroundColor: primaryColor }}>Save Post</button>
+                        <button onClick={onCancel} className="w-full py-4 bg-white dark:bg-slate-700 font-bold rounded-xl border dark:border-slate-600 text-gray-600 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-600 transition-colors text-sm md:text-base">Cancel</button>
+                    </div>
+                </div>
             </div>
 
-            <div className="hidden md:block pt-4 border-t dark:border-slate-700 mt-auto space-y-3 flex-shrink-0 sticky bottom-0 bg-gray-50 dark:bg-slate-800 pb-6 z-10 transition-all opacity-100">
-                <button onClick={() => onSave({ ...formData, lastUpdated: new Date().toISOString() })} className="w-full py-4 text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all text-sm md:text-base" style={{ backgroundColor: primaryColor }}>Save Post</button>
-                <button onClick={onCancel} className="w-full py-4 bg-white dark:bg-slate-700 font-bold rounded-xl border dark:border-slate-600 text-gray-600 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-600 transition-colors text-sm md:text-base">Cancel</button>
+            {/* MOBILE ACTION BAR (Floating Dock) */}
+            <div className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-sm bg-white/90 dark:bg-slate-900/90 backdrop-blur-lg border border-gray-200 dark:border-slate-700 p-2 z-[60] flex gap-2 shadow-2xl rounded-2xl">
+                <button onClick={onCancel} className="flex-1 py-3 bg-gray-100 dark:bg-slate-800 font-bold rounded-xl text-gray-600 dark:text-gray-300">Cancel</button>
+                <button onClick={() => onSave({ ...formData, lastUpdated: new Date().toISOString() })} className="flex-1 py-3 text-white font-bold rounded-xl shadow-lg" style={{ backgroundColor: primaryColor }}>Save</button>
             </div>
-        </div>
-    </div>
-
-{/* MOBILE ACTION BAR (Floating Dock) */ }
-<div className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-sm bg-white/90 dark:bg-slate-900/90 backdrop-blur-lg border border-gray-200 dark:border-slate-700 p-2 z-[60] flex gap-2 shadow-2xl rounded-2xl">
-    <button onClick={onCancel} className="flex-1 py-3 bg-gray-100 dark:bg-slate-800 font-bold rounded-xl text-gray-600 dark:text-gray-300">Cancel</button>
-    <button onClick={() => onSave({ ...formData, lastUpdated: new Date().toISOString() })} className="flex-1 py-3 text-white font-bold rounded-xl shadow-lg" style={{ backgroundColor: primaryColor }}>Save</button>
-</div>
         </div >
     );
 };
