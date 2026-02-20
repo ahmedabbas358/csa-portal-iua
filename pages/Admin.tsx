@@ -1042,6 +1042,25 @@ const Admin: React.FC<AdminProps> = ({ lang, onLogout, onGoHome, onRefresh, stat
     // Analytics Modal State
     const [analyticsItem, setAnalyticsItem] = useState<NewsPost | null>(null);
 
+    // DEBOUNCED SETTINGS SAVER FOR THEME STUDIO (Prevents 1000s of API requests on color pickers/sliders)
+    const [lastSavedSettings, setLastSavedSettings] = useState<string>(JSON.stringify(state.settings));
+    useEffect(() => {
+        const currentSettingsStr = JSON.stringify(state.settings);
+        if (currentSettingsStr === lastSavedSettings) return;
+
+        const timer = setTimeout(async () => {
+            try {
+                await api.manage.updateSettings(state.settings);
+                setLastSavedSettings(currentSettingsStr);
+                console.log('Theme auto-saved.');
+            } catch (err) {
+                console.error('Debounced Theme Save Error:', err);
+            }
+        }, 1500); // Wait 1.5s after user stops dragging sliders/choosing colors before saving
+
+        return () => clearTimeout(timer);
+    }, [state.settings]);
+
     // ADVANCED SEARCH FILTERS STATE
     const [showFilters, setShowFilters] = useState(false);
     const [filterAuthor, setFilterAuthor] = useState('');
@@ -1186,20 +1205,20 @@ const Admin: React.FC<AdminProps> = ({ lang, onLogout, onGoHome, onRefresh, stat
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                                 <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 flex items-center gap-4">
                                     <div className="p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-xl"><Newspaper size={24} /></div>
-                                    <div><p className="text-sm font-bold text-gray-400">Total Posts</p><h3 className="text-2xl font-black dark:text-white">{state.news.length}</h3></div>
+                                    <div><p className="text-sm font-bold text-gray-400">Total Posts</p><h3 className="text-2xl font-black dark:text-white">{(state.news || []).length}</h3></div>
                                 </div>
                                 <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 flex items-center gap-4">
                                     <div className="p-3 bg-purple-50 dark:bg-purple-900/20 text-purple-600 rounded-xl"><Eye size={24} /></div>
                                     <div>
                                         <p className="text-sm font-bold text-gray-400">Total Views</p>
-                                        <h3 className="text-2xl font-black dark:text-white">{state.news.reduce((sum, item) => sum + (item.views || 0), 0).toLocaleString()}</h3>
+                                        <h3 className="text-2xl font-black dark:text-white">{(state.news || []).reduce((sum, item) => sum + (item.views || 0), 0).toLocaleString()}</h3>
                                     </div>
                                 </div>
                                 <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 flex items-center gap-4">
                                     <div className="p-3 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-xl"><Heart size={24} /></div>
                                     <div>
                                         <p className="text-sm font-bold text-gray-400">Total Likes</p>
-                                        <h3 className="text-2xl font-black dark:text-white">{state.news.reduce((sum, item) => sum + (item.likes || 0), 0).toLocaleString()}</h3>
+                                        <h3 className="text-2xl font-black dark:text-white">{(state.news || []).reduce((sum, item) => sum + (item.likes || 0), 0).toLocaleString()}</h3>
                                     </div>
                                 </div>
                                 <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 flex items-center gap-4">
@@ -1207,8 +1226,8 @@ const Admin: React.FC<AdminProps> = ({ lang, onLogout, onGoHome, onRefresh, stat
                                     <div>
                                         <p className="text-sm font-bold text-gray-400">Avg Engagement</p>
                                         <h3 className="text-2xl font-black dark:text-white">
-                                            {state.news.length > 0
-                                                ? ((state.news.reduce((sum, item) => sum + (item.likes || 0), 0) / Math.max(1, state.news.reduce((sum, item) => sum + (item.views || 0), 0))) * 100).toFixed(1)
+                                            {(state.news || []).length > 0
+                                                ? (((state.news || []).reduce((sum, item) => sum + (item.likes || 0), 0) / Math.max(1, (state.news || []).reduce((sum, item) => sum + (item.views || 0), 0))) * 100).toFixed(1)
                                                 : 0}%
                                         </h3>
                                     </div>
@@ -1223,7 +1242,7 @@ const Admin: React.FC<AdminProps> = ({ lang, onLogout, onGoHome, onRefresh, stat
                                         <button onClick={() => { setActiveTab('news'); setViewMode('list'); }} className="text-sm font-bold text-brand-600 hover:underline">View All</button>
                                     </div>
                                     <div className="divide-y divide-gray-100 dark:divide-slate-800">
-                                        {[...state.news.map(n => ({ ...n, _type: 'news' })), ...state.events.map(e => ({ ...e, _type: 'event' }))]
+                                        {[...(state.news || []).map(n => ({ ...n, _type: 'news' })), ...(state.events || []).map(e => ({ ...e, _type: 'event' }))]
                                             .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
                                             .slice(0, 5)
                                             .map((item: any) => (
@@ -1233,7 +1252,7 @@ const Admin: React.FC<AdminProps> = ({ lang, onLogout, onGoHome, onRefresh, stat
                                                     </div>
                                                     <div className="flex-1 min-w-0">
                                                         <h4 className="font-bold text-gray-900 dark:text-white truncate">{item.title}</h4>
-                                                        <p className="text-xs text-gray-500">{item._type === 'news' ? `Published ${new Date(item.date).toLocaleDateString()}` : `Event on ${new Date(item.date).toLocaleDateString()}`}</p>
+                                                        <p className="text-xs font-bold mt-1 text-gray-500">{item._type === 'news' ? `Published ${new Date(item.date).toLocaleDateString()}` : `Event on ${new Date(item.date).toLocaleDateString()}`}</p>
                                                     </div>
                                                     <div className="flex-shrink-0">
                                                         <span className={`px-3 py-1 text-xs font-bold rounded-full ${item.status === 'published' || item.isCompleted ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
@@ -1242,7 +1261,7 @@ const Admin: React.FC<AdminProps> = ({ lang, onLogout, onGoHome, onRefresh, stat
                                                     </div>
                                                 </div>
                                             ))}
-                                        {state.news.length === 0 && state.events.length === 0 && <div className="p-8 text-center text-gray-500">No recent activity found.</div>}
+                                        {((state.news || []).length === 0 && (state.events || []).length === 0) && <div className="p-8 text-center text-gray-500">No recent activity found.</div>}
                                     </div>
                                 </div>
 
@@ -1284,7 +1303,7 @@ const Admin: React.FC<AdminProps> = ({ lang, onLogout, onGoHome, onRefresh, stat
                             </div>
                         </div>
                     )}
-                    {activeTab === 'themes' && <ThemeManager settings={state.settings} onUpdateSettings={async (s: AppSettings) => { state.setSettings(s); try { await api.manage.updateSettings(s); if (onRefresh) await onRefresh(); } catch (e) { console.error('Theme save error:', e); } }} />}
+                    {activeTab === 'themes' && <ThemeManager settings={state.settings} onUpdateSettings={s => state.setSettings(s)} />}
                     {activeTab === 'settings' && <SettingsEditor settings={state.settings} onSave={async (s: AppSettings) => { state.setSettings(s); try { await api.manage.updateSettings(s); if (onRefresh) await onRefresh(); } catch (e: any) { alert('Settings save failed: ' + e.message); } }} timeline={state.timeline} onSaveTimeline={async (t: TimelineItem[]) => { state.setTimeline(t); try { for (const item of t) { if (item.id && !state.timeline.find(old => old.id === item.id)) { await api.manage.createTimeline(item); } } if (onRefresh) await onRefresh(); } catch (e: any) { alert('Timeline save failed: ' + e.message); } }} />}
                     {['news', 'events', 'team'].includes(activeTab) && (
                         <div className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-sm border border-gray-100 dark:border-slate-800 flex flex-col h-auto animate-fade-in">

@@ -8,6 +8,7 @@ import {
     BoxSelect, Search, Minus, UserCircle
 } from 'lucide-react';
 import { INITIAL_STATE } from '../constants';
+import MediaUploader from './MediaUploader';
 
 interface ThemeManagerProps {
     settings: AppSettings;
@@ -84,7 +85,8 @@ const ThemeManager: React.FC<ThemeManagerProps> = ({ settings, onUpdateSettings 
     const filteredPatterns = ALL_PATTERNS.filter(p => p.includes(patternSearch));
 
     const filteredPresets = PRESET_THEMES.filter(
-        t => t.name.toLowerCase().includes(searchQuery.toLowerCase())
+        t => t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (t.pattern && t.pattern.toLowerCase().includes(searchQuery.toLowerCase()))
     );
 
     // --- RENDER HELPERS ---
@@ -199,6 +201,10 @@ const ThemeManager: React.FC<ThemeManagerProps> = ({ settings, onUpdateSettings 
                         <div className="xl:col-span-1 space-y-6">
                             {renderFeatureControl("Brand Identity", <Palette size={20} />, (
                                 <div className="space-y-6">
+                                    <div className="p-4 bg-gray-50 dark:bg-slate-800 rounded-xl text-left">
+                                        <label className="block text-xs font-bold text-gray-500 uppercase mb-3">Portal Logo</label>
+                                        <MediaUploader value={settings.logoUrl || ''} onChange={u => updateWithHistory({ ...settings, logoUrl: u })} />
+                                    </div>
                                     <div className="p-4 bg-gray-50 dark:bg-slate-800 rounded-xl">
                                         <label className="block text-xs font-bold text-gray-500 uppercase mb-3">Primary Color</label>
                                         <div className="flex gap-3 items-center">
