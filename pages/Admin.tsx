@@ -628,7 +628,7 @@ const NewsEditor = ({ item, onSave, onCancel, primaryColor }: { item?: NewsPost,
                                 </div>
                             </div>
 
-                            <div className="flex gap-2"><input className="flex-grow p-4 border dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-base" value={tagInput} onChange={e => setTagInput(e.target.value)} placeholder="Add Tag" onKeyDown={e => e.key === 'Enter' && addTag()} /><button onClick={addTag} className="px-6 bg-gray-100 dark:bg-slate-700 rounded-xl"><Plus /></button></div>
+                            <div className="flex gap-2"><input className="flex-grow p-4 border dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-base" value={tagInput} onChange={e => setTagInput(e.target.value)} placeholder="Add Tag" onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } }} /><button type="button" onClick={addTag} className="px-6 bg-gray-100 dark:bg-slate-700 rounded-xl"><Plus /></button></div>
                             <div className="flex flex-wrap gap-2">{formData.tags.map(t => <span key={t} className="px-3 py-1 bg-brand-100 text-brand-700 rounded-lg text-sm">{t}</span>)}</div>
                         </div>
                     ) : (
@@ -753,7 +753,7 @@ const NewsEditor = ({ item, onSave, onCancel, primaryColor }: { item?: NewsPost,
                         )}
                     </div>
 
-                    <div className="hidden md:block pt-4 border-t dark:border-slate-700 mt-auto space-y-3 flex-shrink-0 sticky bottom-0 bg-gray-50 dark:bg-slate-800 pb-6 z-10 transition-all opacity-100">
+                    <div className="hidden md:block pt-4 border-t dark:border-slate-700 mt-8 space-y-3 flex-shrink-0 bg-gray-50 dark:bg-slate-800 pb-2 z-10 transition-all opacity-100">
                         <button onClick={() => onSave({ ...formData, lastUpdated: new Date().toISOString() })} className="w-full py-4 text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all text-sm md:text-base" style={{ backgroundColor: primaryColor }}>Save Post</button>
                         <button onClick={onCancel} className="w-full py-4 bg-white dark:bg-slate-700 font-bold rounded-xl border dark:border-slate-600 text-gray-600 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-600 transition-colors text-sm md:text-base">Cancel</button>
                     </div>
@@ -894,6 +894,22 @@ const MemberEditor = ({ item, onSave, onCancel, primaryColor }: { item?: Member,
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <input className="p-4 border rounded-lg bg-white dark:bg-slate-800 text-base" value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value })} placeholder="Role (EN)" />
                     <input className="p-4 border rounded-lg bg-white dark:bg-slate-800 text-right text-base" value={formData.roleAr} onChange={e => setFormData({ ...formData, roleAr: e.target.value })} placeholder="المسمى (عربي)" />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input className="p-4 border rounded-lg bg-white dark:bg-slate-800 text-base" value={formData.office} onChange={e => setFormData({ ...formData, office: e.target.value })} placeholder="Custom Title/Office (EN)" />
+                    <input className="p-4 border rounded-lg bg-white dark:bg-slate-800 text-right text-base" value={formData.officeAr} onChange={e => setFormData({ ...formData, officeAr: e.target.value })} placeholder="المسمى المخصص (عضو المكتب الإعلامي...)" />
+                </div>
+                <div className="space-y-2">
+                    <label className="block text-xs font-bold text-gray-500 uppercase">Category</label>
+                    <select
+                        className="w-full p-4 border rounded-lg bg-white dark:bg-slate-800 text-base"
+                        value={formData.category}
+                        onChange={e => setFormData({ ...formData, category: e.target.value })}
+                    >
+                        <option value="president">President / Leadership</option>
+                        <option value="executive">Executive Board</option>
+                        <option value="member">General Member</option>
+                    </select>
                 </div>
             </div>
             <div className="w-full md:w-80 space-y-4">

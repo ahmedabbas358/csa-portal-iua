@@ -518,6 +518,8 @@ const Home: React.FC<HomeProps> = ({ lang, news, setNews, setPage, settings }) =
                         setNews(prev => prev.map(p =>
                             p.id === id ? { ...p, views: (p.views || 0) + 1 } : p
                         ));
+                        // Send view to backend
+                        api.viewNews(id).catch(console.error);
                     }
                 }
             });

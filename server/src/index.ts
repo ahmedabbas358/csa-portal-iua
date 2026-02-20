@@ -654,6 +654,14 @@ app.post('/api/news/:id/like', asyncHandler(async (req, res) => {
     res.json({ success: true, likes: updated.likes });
 }));
 
+app.post('/api/news/:id/view', asyncHandler(async (req, res) => {
+    const updated = await prisma.news.update({
+        where: { id: req.params.id },
+        data: { views: { increment: 1 } }
+    });
+    res.json({ success: true, views: updated.views });
+}));
+
 // ─── Timeline CRUD ──────────────────────────────────────────────────
 app.post('/api/timeline', verifyAnyAuth, asyncHandler(async (req, res) => {
     const { year, titleAr, titleEn, descAr, descEn, icon } = req.body;
@@ -804,6 +812,28 @@ app.put('/api/dean/config', verifyDeanToken, asyncHandler(async (req, res) => {
         data: updateData,
     });
     res.json({ success: true, lastChanged: config.updatedAt });
+}));
+
+// ═══════════════════════════════════════════════════════════════════
+// APP SETTINGS
+// ═══════════════════════════════════════════════════════════════════
+
+app.get('/api/settings', asyncHandler(async (req, res) => {
+    let settings = await prisma.appSetting.findUnique({ where: { id: 'main' } });
+    if (!settings) {
+        settings = await prisma.appSetting.create({ data: { id: 'main' } });
+    }
+    res.json(settings);
+}));
+
+app.put('/api/settings', verifyAnyAuth, asyncHandler(async (req, res) => {
+    const { id, ...updateData } = req.body;
+    const settings = await prisma.appSetting.upsert({
+        where: { id: 'main' },
+        create: { id: 'main', ...updateData },
+        update: updateData,
+    });
+    res.json(settings);
 }));
 
 // ═══════════════════════════════════════════════════════════════════
