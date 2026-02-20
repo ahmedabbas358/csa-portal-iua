@@ -466,7 +466,7 @@ const Events: React.FC<EventsProps> = ({ lang, events }) => {
             {selectedEvent && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in" onClick={closeModal}>
                     <div className="w-full max-w-4xl relative animate-slide-up" onClick={e => e.stopPropagation()}>
-                        <button onClick={closeModal} className="absolute -top-12 right-0 md:bg-white/10 md:-right-12 z-[70] p-3 text-white/80 hover:text-white hover:bg-white/20 rounded-full transition-colors backdrop-blur-md">
+                        <button onClick={closeModal} className="fixed top-4 right-4 md:absolute md:-top-12 md:-right-12 z-[70] p-2 md:p-3 text-white bg-black/40 md:bg-white/10 border md:border-none border-white/20 hover:text-white hover:bg-black/60 md:hover:bg-white/20 rounded-full transition-all backdrop-blur-md shadow-lg">
                             <X size={24} />
                         </button>
                         <div className="bg-white dark:bg-slate-900 rounded-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl custom-scrollbar">
