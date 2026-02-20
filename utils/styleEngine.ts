@@ -31,14 +31,19 @@ export const ALL_PATTERNS = [
 const svgData = (content: string, w = 20, h = 20) =>
     `url("data:image/svg+xml,%3Csvg width='${w}' height='${h}' viewBox='0 0 ${w} ${h}' xmlns='http://www.w3.org/2000/svg'%3E${content}%3C/svg%3E")`;
 
-// Helper to get color/opacity
+// Helper to get color/opacity for SVG string interpolation
 const getColor = (isDark: boolean, opacity = 0.05) =>
     isDark ? `%23ffffff` : `%23000000`; // URL encoded #
 
 export const getPatternStyle = (pattern: string, color: string, isDark: boolean): CSSProperties => {
-    const fill = getColor(isDark, 0.05);
-    const stroke = getColor(isDark, 0.05);
-    const c = color; // Dynamic color if needed (often better to use neutral overlay)
+    // Tripled base opacity for SVGs since soft-light blend mode was removed
+    const fill = getColor(isDark, 0.15);
+    const stroke = getColor(isDark, 0.15);
+    const fillOpacity = isDark ? '0.08' : '0.04';
+    const strokeOpacity = isDark ? '0.1' : '0.08';
+
+    // Gradient patterns use the RGBA string directly passed in `color` variable
+    const c = color;
 
     switch (true) {
         case pattern === 'none': return {};
@@ -68,7 +73,7 @@ export const getPatternStyle = (pattern: string, color: string, isDark: boolean)
             return { backgroundImage: `linear-gradient(30deg, ${c} 12%, transparent 12.5%, transparent 87%, ${c} 87.5%, ${c}), linear-gradient(150deg, ${c} 12%, transparent 12.5%, transparent 87%, ${c} 87.5%, ${c}), linear-gradient(30deg, ${c} 12%, transparent 12.5%, transparent 87%, ${c} 87.5%, ${c}), linear-gradient(150deg, ${c} 12%, transparent 12.5%, transparent 87%, ${c} 87.5%, ${c}), linear-gradient(60deg, ${c} 25%, transparent 25.5%, transparent 75%, ${c} 75%, ${c}), linear-gradient(60deg, ${c} 25%, transparent 25.5%, transparent 75%, ${c} 75%, ${c})`, backgroundSize: '40px 70px', backgroundPosition: '0 0, 0 0, 20px 35px, 20px 35px, 0 0, 20px 35px' };
 
         case pattern.includes('hexagons'):
-            return { backgroundImage: `url("data:image/svg+xml,%3Csvg width='24' height='40' viewBox='0 0 24 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 40c5.523 0 10-4.477 10-10V10c0-5.523-4.477-10-10-10S-10 4.477-10 10v20c0 5.523 4.477 10 10 10z' fill='${fill}' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E")` };
+            return { backgroundImage: `url("data:image/svg+xml,%3Csvg width='24' height='40' viewBox='0 0 24 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 40c5.523 0 10-4.477 10-10V10c0-5.523-4.477-10-10-10S-10 4.477-10 10v20c0 5.523 4.477 10 10 10z' fill='${fill}' fill-opacity='${fillOpacity}' fill-rule='evenodd'/%3E%3C/svg%3E")` };
 
         // --- ZIGZAG ---
         case pattern.includes('zigzag'):
@@ -80,17 +85,17 @@ export const getPatternStyle = (pattern: string, color: string, isDark: boolean)
             return { backgroundImage: `linear-gradient(${c} 2px, transparent 2px), linear-gradient(90deg, ${c} 2px, transparent 2px), linear-gradient(${c} 1px, transparent 1px), linear-gradient(90deg, ${c} 1px, transparent 1px)`, backgroundSize: '100px 100px, 100px 100px, 20px 20px, 20px 20px', backgroundPosition: '-2px -2px, -2px -2px, -1px -1px, -1px -1px' };
 
         case pattern === 'topography':
-            return { backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3z' fill='${fill}' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E")` };
+            return { backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3z' fill='${fill}' fill-opacity='${fillOpacity}' fill-rule='evenodd'/%3E%3C/svg%3E")` };
 
         // --- NEW TECHNICAL THEMES ---
         case pattern === 'matrix':
             return { backgroundImage: `linear-gradient(0deg, transparent 24%, ${c} 25%, ${c} 26%, transparent 27%, transparent 74%, ${c} 75%, ${c} 76%, transparent 77%, transparent), linear-gradient(90deg, transparent 24%, ${c} 25%, ${c} 26%, transparent 27%, transparent 74%, ${c} 75%, ${c} 76%, transparent 77%, transparent)`, backgroundSize: '30px 30px' };
 
         case pattern === 'binary':
-            return { backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='${fill}' fill-opacity='0.1' font-family='monospace' font-size='10'%3E%3Ctext x='10' y='15'%3E1%3C/text%3E%3Ctext x='30' y='15'%3E0%3C/text%3E%3Ctext x='50' y='15'%3E1%3C/text%3E%3Ctext x='10' y='35'%3E0%3C/text%3E%3Ctext x='30' y='35'%3E1%3C/text%3E%3Ctext x='50' y='35'%3E0%3C/text%3E%3Ctext x='10' y='55'%3E1%3C/text%3E%3Ctext x='30' y='55'%3E0%3C/text%3E%3Ctext x='50' y='55'%3E1%3C/text%3E%3C/g%3E%3C/svg%3E")` };
+            return { backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='${fill}' fill-opacity='${fillOpacity}' font-family='monospace' font-size='10'%3E%3Ctext x='10' y='15'%3E1%3C/text%3E%3Ctext x='30' y='15'%3E0%3C/text%3E%3Ctext x='50' y='15'%3E1%3C/text%3E%3Ctext x='10' y='35'%3E0%3C/text%3E%3Ctext x='30' y='35'%3E1%3C/text%3E%3Ctext x='50' y='35'%3E0%3C/text%3E%3Ctext x='10' y='55'%3E1%3C/text%3E%3Ctext x='30' y='55'%3E0%3C/text%3E%3Ctext x='50' y='55'%3E1%3C/text%3E%3C/g%3E%3C/svg%3E")` };
 
         case pattern === 'network':
-            return { backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='10' cy='10' r='2' fill='${fill}' fill-opacity='0.2'/%3E%3Ccircle cx='50' cy='50' r='2' fill='${fill}' fill-opacity='0.2'/%3E%3Cpath d='M10 10 L50 50' stroke='${stroke}' stroke-opacity='0.1' stroke-width='1'/%3E%3Ccircle cx='90' cy='20' r='2' fill='${fill}' fill-opacity='0.2'/%3E%3Cpath d='M50 50 L90 20' stroke='${stroke}' stroke-opacity='0.1' stroke-width='1'/%3E%3C/svg%3E")` };
+            return { backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='10' cy='10' r='2' fill='${fill}' fill-opacity='${strokeOpacity}'/%3E%3Ccircle cx='50' cy='50' r='2' fill='${fill}' fill-opacity='${strokeOpacity}'/%3E%3Cpath d='M10 10 L50 50' stroke='${stroke}' stroke-opacity='${strokeOpacity}' stroke-width='1'/%3E%3Ccircle cx='90' cy='20' r='2' fill='${fill}' fill-opacity='${strokeOpacity}'/%3E%3Cpath d='M50 50 L90 20' stroke='${stroke}' stroke-opacity='${strokeOpacity}' stroke-width='1'/%3E%3C/svg%3E")` };
 
         case pattern === 'chip':
             return { backgroundImage: `conic-gradient(from 90deg at 1px 1px, transparent 90deg, ${c} 0) 0 0/20px 20px` };

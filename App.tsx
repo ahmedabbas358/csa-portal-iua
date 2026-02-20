@@ -19,8 +19,8 @@ import { api, getDeanToken, getAdminToken, clearDeanToken, clearAdminToken } fro
 
 // --- PATTERN HELPER ---
 const getPatternStyle = (pattern?: string, isDark?: boolean): React.CSSProperties => {
-    // Increased opacity for better visibility
-    const color = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.07)';
+    // Solid base colors with 30-40% opacity handled in styleEngine
+    const color = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
     return getEnginePattern(pattern || 'none', color, isDark || false);
 };
 
@@ -791,7 +791,7 @@ const App: React.FC = () => {
             {/* Global Pattern Overlay */}
             {currentPage !== 'login' && currentPage !== 'dean-login' && currentPage !== 'dean-dashboard' && settings.backgroundPattern && settings.backgroundPattern !== 'none' && (
                 <div
-                    className="fixed inset-0 z-0 pointer-events-none opacity-100 transition-all duration-700 mix-blend-soft-light dark:mix-blend-overlay"
+                    className="fixed inset-0 z-0 pointer-events-none opacity-100 transition-all duration-700"
                     style={getPatternStyle(settings.backgroundPattern, isDarkMode)}
                 />
             )}

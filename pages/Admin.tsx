@@ -305,8 +305,11 @@ const SettingsEditor = ({ settings, onSave, timeline, onSaveTimeline }: {
                         </div>
                     ))}
                     <div className="md:col-span-2">
-                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Logo URL</label>
-                        <input className="w-full p-3 text-base border rounded-xl bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700" value={localSettings.logoUrl} onChange={(e) => handleChange('logoUrl', e.target.value)} />
+                        <MediaUploader
+                            label="Desktop/Navigation Logo"
+                            value={localSettings.logoUrl || ''}
+                            onChange={(url) => handleChange('logoUrl', url)}
+                        />
                     </div>
                     {['primaryColor', 'secondaryColor'].map(key => (
                         <div key={key}>
@@ -452,7 +455,7 @@ const PostPreview = ({ item, design, aspectRatio }: { item: any, design: PostDes
 };
 
 // --- NEWS EDITOR ---
-const NewsEditor = ({ item, onSave, onCancel, primaryColor }: { item?: NewsPost, onSave: (i: NewsPost) => void, onCancel: () => void, primaryColor: string }) => {
+const NewsEditor = ({ item, onSave, onCancel, primaryColor, availableTags = [] }: { item?: NewsPost, onSave: (i: NewsPost) => void, onCancel: () => void, primaryColor: string, availableTags?: string[] }) => {
     const [formData, setFormData] = useState<NewsPost>(item || {
         id: Date.now().toString(), title: '', content: '', date: new Date().toISOString().split('T')[0], author: 'Admin', tags: ['News'], image: '', mediaType: 'image', media: [], aspectRatio: 'square',
         design: { fontStyle: 'modern', textColor: '#ffffff', textAlignment: 'center', overlayText: '', overlayOpacity: 30, imagePosition: { x: 50, y: 50, scale: 1 }, filters: { brightness: 100, contrast: 100, saturate: 100, grayscale: 0, sepia: 0 } },
@@ -628,8 +631,43 @@ const NewsEditor = ({ item, onSave, onCancel, primaryColor }: { item?: NewsPost,
                                 </div>
                             </div>
 
-                            <div className="flex gap-2"><input className="flex-grow p-4 border dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-base" value={tagInput} onChange={e => setTagInput(e.target.value)} placeholder="Add Tag" onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } }} /><button type="button" onClick={addTag} className="px-6 bg-gray-100 dark:bg-slate-700 rounded-xl"><Plus /></button></div>
-                            <div className="flex flex-wrap gap-2">{formData.tags.map(t => <span key={t} className="px-3 py-1 bg-brand-100 text-brand-700 rounded-lg text-sm">{t}</span>)}</div>
+                            <div className="space-y-4">
+                                <label className="block text-xs font-bold text-gray-500 uppercase">Tags</label>
+                                <div className="flex flex-wrap gap-2 mb-2">
+                                    {formData.tags.map(tag => (
+                                        <span key={tag} className="px-3 py-1 bg-brand-50 text-brand-600 rounded-lg text-sm font-bold flex items-center gap-2 dark:bg-brand-900/40 dark:text-brand-300">
+                                            {tag}
+                                            <button onClick={() => setFormData({ ...formData, tags: formData.tags.filter(t => t !== tag) })} className="hover:text-red-500"><X size={14} /></button>
+                                        </span>
+                                    ))}
+                                </div>
+                                <div className="flex gap-2">
+                                    <input className="flex-1 p-3 border rounded-lg bg-white dark:bg-slate-800 dark:border-slate-700 text-sm" value={tagInput} onChange={e => setTagInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && (e.preventDefault(), addTag())} placeholder="Add a tag..." />
+                                    <button type="button" onClick={addTag} className="px-4 bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 font-bold rounded-lg transition-colors">Add</button>
+                                </div>
+
+                                {/* Tag Suggestions */}
+                                {availableTags.length > 0 && (
+                                    <div className="mt-4 p-4 bg-gray-50 dark:bg-slate-800/50 rounded-xl border border-gray-100 dark:border-slate-700">
+                                        <p className="text-xs font-bold text-gray-500 uppercase mb-3 flex items-center gap-2"><Tag size={14} /> Previously Used Tags</p>
+                                        <div className="flex flex-wrap gap-2">
+                                            {availableTags.filter(t => !formData.tags.includes(t)).map(tag => (
+                                                <button
+                                                    key={tag}
+                                                    type="button"
+                                                    onClick={() => setFormData(p => ({ ...p, tags: [...p.tags, tag] }))}
+                                                    className="px-3 py-1.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-lg text-xs font-bold text-gray-600 dark:text-gray-300 hover:border-brand-400 hover:text-brand-600 transition-colors flex items-center gap-1 shadow-sm hover:shadow"
+                                                >
+                                                    <Plus size={12} /> {tag}
+                                                </button>
+                                            ))}
+                                            {availableTags.filter(t => !formData.tags.includes(t)).length === 0 && (
+                                                <span className="text-xs text-gray-400">All available tags are already added to this post.</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     ) : (
                         <div className="space-y-8">
@@ -1098,7 +1136,11 @@ const Admin: React.FC<AdminProps> = ({ lang, onLogout, onGoHome, onRefresh, stat
 
     const renderEditor = () => {
         const props = { onCancel: () => setViewMode('list'), primaryColor: state.settings.primaryColor };
-        if (activeTab === 'news') return <NewsEditor item={editingItem} onSave={handleSave} {...props} />;
+
+        if (activeTab === 'news') {
+            const allTags = Array.from(new Set(state.news.flatMap(n => n.tags || [])));
+            return <NewsEditor item={editingItem} onSave={handleSave} availableTags={allTags} {...props} />;
+        }
         if (activeTab === 'events') return <EventEditor item={editingItem} onSave={handleSave} {...props} />;
         if (activeTab === 'team') return <MemberEditor item={editingItem} onSave={handleSave} {...props} />;
         return null;
@@ -1139,10 +1181,107 @@ const Admin: React.FC<AdminProps> = ({ lang, onLogout, onGoHome, onRefresh, stat
                 </header>
                 <div className="p-6 md:p-8">
                     {activeTab === 'dashboard' && (
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in">
-                            <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800"><div className="flex items-center gap-4"><Newspaper size={24} className="text-blue-600" /><div><p className="text-sm font-bold text-gray-400">Total Posts</p><h3 className="text-2xl font-black dark:text-white">{state.news.length}</h3></div></div></div>
-                            <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800"><div className="flex items-center gap-4"><Calendar size={24} className="text-purple-600" /><div><p className="text-sm font-bold text-gray-400">Events</p><h3 className="text-2xl font-black dark:text-white">{state.events.length}</h3></div></div></div>
-                            <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800"><div className="flex items-center gap-4"><Users size={24} className="text-amber-600" /><div><p className="text-sm font-bold text-gray-400">Members</p><h3 className="text-2xl font-black dark:text-white">{state.members.length}</h3></div></div></div>
+                        <div className="space-y-6 animate-fade-in">
+                            {/* TOP STATS */}
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 flex items-center gap-4">
+                                    <div className="p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-xl"><Newspaper size={24} /></div>
+                                    <div><p className="text-sm font-bold text-gray-400">Total Posts</p><h3 className="text-2xl font-black dark:text-white">{state.news.length}</h3></div>
+                                </div>
+                                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 flex items-center gap-4">
+                                    <div className="p-3 bg-purple-50 dark:bg-purple-900/20 text-purple-600 rounded-xl"><Eye size={24} /></div>
+                                    <div>
+                                        <p className="text-sm font-bold text-gray-400">Total Views</p>
+                                        <h3 className="text-2xl font-black dark:text-white">{state.news.reduce((sum, item) => sum + (item.views || 0), 0).toLocaleString()}</h3>
+                                    </div>
+                                </div>
+                                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 flex items-center gap-4">
+                                    <div className="p-3 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-xl"><Heart size={24} /></div>
+                                    <div>
+                                        <p className="text-sm font-bold text-gray-400">Total Likes</p>
+                                        <h3 className="text-2xl font-black dark:text-white">{state.news.reduce((sum, item) => sum + (item.likes || 0), 0).toLocaleString()}</h3>
+                                    </div>
+                                </div>
+                                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 flex items-center gap-4">
+                                    <div className="p-3 bg-amber-50 dark:bg-amber-900/20 text-amber-600 rounded-xl"><BarChart2 size={24} /></div>
+                                    <div>
+                                        <p className="text-sm font-bold text-gray-400">Avg Engagement</p>
+                                        <h3 className="text-2xl font-black dark:text-white">
+                                            {state.news.length > 0
+                                                ? ((state.news.reduce((sum, item) => sum + (item.likes || 0), 0) / Math.max(1, state.news.reduce((sum, item) => sum + (item.views || 0), 0))) * 100).toFixed(1)
+                                                : 0}%
+                                        </h3>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                {/* RECENT ACTIVITY FEED */}
+                                <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-[2rem] shadow-sm border border-gray-100 dark:border-slate-800 overflow-hidden">
+                                    <div className="p-6 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center">
+                                        <h3 className="font-bold text-lg dark:text-white flex items-center gap-2"><Clock size={20} className="text-brand-500" /> Recent Activity</h3>
+                                        <button onClick={() => { setActiveTab('news'); setViewMode('list'); }} className="text-sm font-bold text-brand-600 hover:underline">View All</button>
+                                    </div>
+                                    <div className="divide-y divide-gray-100 dark:divide-slate-800">
+                                        {[...state.news.map(n => ({ ...n, _type: 'news' })), ...state.events.map(e => ({ ...e, _type: 'event' }))]
+                                            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                                            .slice(0, 5)
+                                            .map((item: any) => (
+                                                <div key={item.id + item._type} className="p-4 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors flex items-center gap-4">
+                                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${item._type === 'news' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30' : 'bg-purple-100 text-purple-600 dark:bg-purple-900/30'}`}>
+                                                        {item._type === 'news' ? <Newspaper size={20} /> : <Calendar size={20} />}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <h4 className="font-bold text-gray-900 dark:text-white truncate">{item.title}</h4>
+                                                        <p className="text-xs text-gray-500">{item._type === 'news' ? `Published ${new Date(item.date).toLocaleDateString()}` : `Event on ${new Date(item.date).toLocaleDateString()}`}</p>
+                                                    </div>
+                                                    <div className="flex-shrink-0">
+                                                        <span className={`px-3 py-1 text-xs font-bold rounded-full ${item.status === 'published' || item.isCompleted ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                                                            {item.status || (item.isCompleted ? 'Completed' : 'Upcoming')}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        {state.news.length === 0 && state.events.length === 0 && <div className="p-8 text-center text-gray-500">No recent activity found.</div>}
+                                    </div>
+                                </div>
+
+                                {/* QUICK ACTIONS */}
+                                <div className="space-y-6">
+                                    <div className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-sm border border-gray-100 dark:border-slate-800 overflow-hidden">
+                                        <div className="p-6 border-b border-gray-100 dark:border-slate-800">
+                                            <h3 className="font-bold text-lg dark:text-white flex items-center gap-2"><Zap size={20} className="text-amber-500" /> Quick Actions</h3>
+                                        </div>
+                                        <div className="p-4 space-y-2">
+                                            <button onClick={() => { setActiveTab('news'); handleCreate(); }} className="w-full flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-slate-800 hover:bg-brand-50 dark:hover:bg-brand-900/20 hover:text-brand-600 transition-colors group">
+                                                <div className="flex items-center gap-3 font-bold dark:text-gray-200 group-hover:text-brand-600">
+                                                    <div className="p-2 bg-white dark:bg-slate-700 rounded-lg shadow-sm group-hover:bg-brand-100"><Edit size={18} /></div> Create Post
+                                                </div>
+                                                <ChevronRight size={18} className="text-gray-400 group-hover:text-brand-500" />
+                                            </button>
+                                            <button onClick={() => { setActiveTab('events'); handleCreate(); }} className="w-full flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-slate-800 hover:bg-brand-50 dark:hover:bg-brand-900/20 hover:text-brand-600 transition-colors group">
+                                                <div className="flex items-center gap-3 font-bold dark:text-gray-200 group-hover:text-brand-600">
+                                                    <div className="p-2 bg-white dark:bg-slate-700 rounded-lg shadow-sm group-hover:bg-brand-100"><Calendar size={18} /></div> Schedule Event
+                                                </div>
+                                                <ChevronRight size={18} className="text-gray-400 group-hover:text-brand-500" />
+                                            </button>
+                                            <button onClick={() => { setActiveTab('team'); setViewMode('list'); }} className="w-full flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-slate-800 hover:bg-brand-50 dark:hover:bg-brand-900/20 hover:text-brand-600 transition-colors group">
+                                                <div className="flex items-center gap-3 font-bold dark:text-gray-200 group-hover:text-brand-600">
+                                                    <div className="p-2 bg-white dark:bg-slate-700 rounded-lg shadow-sm group-hover:bg-brand-100"><Users size={18} /></div> Manage Team
+                                                </div>
+                                                <ChevronRight size={18} className="text-gray-400 group-hover:text-brand-500" />
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-gradient-to-br from-brand-600 to-indigo-700 p-6 rounded-[2rem] text-white shadow-lg relative overflow-hidden">
+                                        <div className="absolute top-0 right-0 p-4 opacity-20"><Shield size={64} /></div>
+                                        <h3 className="font-black text-xl mb-1 relative z-10">Security Center</h3>
+                                        <p className="text-brand-100 text-sm mb-4 relative z-10">Manage access keys and monitor active administrative sessions.</p>
+                                        <button onClick={() => window.location.hash = ''} className="bg-white text-brand-700 px-4 py-2 rounded-lg text-sm font-bold shadow-sm hover:shadow-md transition-shadow relative z-10">Open Security</button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     )}
                     {activeTab === 'themes' && <ThemeManager settings={state.settings} onUpdateSettings={async (s: AppSettings) => { state.setSettings(s); try { await api.manage.updateSettings(s); if (onRefresh) await onRefresh(); } catch (e) { console.error('Theme save error:', e); } }} />}
